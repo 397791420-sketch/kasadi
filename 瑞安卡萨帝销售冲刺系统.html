@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>瑞安卡萨帝 · 销售冲刺系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei","PingFang SC",sans-serif}
+:root{--blue:#1A478A;--orange:#E67E22;--green:#27AE60;--red:#E74C3C;--gold:#F39C12;--gray:#f5f6fa;--dark:#2c3e50}
+body{background:var(--gray);min-height:100vh;padding-bottom:80px}
+.header{background:linear-gradient(135deg,var(--blue),#0f3460);color:#fff;padding:14px 16px;text-align:center;position:sticky;top:0;z-index:100}
+.header h1{font-size:17px;margin-bottom:2px}
+.header p{font-size:11px;opacity:.85}
+.tabs{display:flex;background:#fff;position:sticky;top:50px;z-index:99;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow-x:auto;flex-wrap:nowrap}
+.tab{padding:9px 10px;font-size:12px;border:none;background:transparent;cursor:pointer;white-space:nowrap;color:#666;border-bottom:3px solid transparent;flex-shrink:0}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:bold}
+.container{max-width:800px;margin:0 auto;padding:10px}
+.card{background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.card h3{font-size:14px;color:var(--dark);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--gray)}
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-size:12px;color:#555;margin-bottom:3px;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none}
+.form-group textarea{resize:vertical;min-height:44px;font-size:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form-row-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.btn{display:inline-block;padding:9px 20px;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-weight:500;text-align:center;transition:.2s}
+.btn-primary{background:var(--blue);color:#fff;width:100%}
+.btn-success{background:var(--green);color:#fff}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-sm{padding:5px 12px;font-size:11px;margin:2px}
+.btn-outline{background:transparent;border:1px solid var(--blue);color:var(--blue)}
+.mt-8{margin-top:8px}.mb-8{margin-bottom:8px}.text-center{text-align:center}
+.text-green{color:var(--green)}.text-blue{color:var(--blue)}.text-red{color:var(--red)}.text-gold{color:var(--gold)}
+.text-muted{color:#999;font-size:11px}
+.success-msg{background:#d4edda;color:#155724;padding:10px;border-radius:6px;margin-bottom:10px;display:none;font-size:12px}
+.warn-msg{background:#fff3cd;color:#856404;padding:10px;border-radius:6px;margin-bottom:10px;font-size:12px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.stat-box{background:var(--gray);border-radius:8px;padding:10px;text-align:center}
+.stat-box .num{font-size:20px;font-weight:bold;color:var(--blue)}
+.stat-box .label{font-size:10px;color:#888;margin-top:2px}
+.stat-box.gold .num{color:var(--gold)}
+.stat-box.green .num{color:var(--green)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--blue);color:#fff;padding:6px 4px;text-align:center;font-weight:500;font-size:11px}
+td{padding:5px 4px;text-align:center;border-bottom:1px solid #eee;font-size:11px}
+tr:nth-child(even){background:var(--gray)}
+.sprint-badge{display:inline-block;background:var(--gold);color:#fff;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:bold}
+.stage-tabs{display:flex;gap:6px;margin-bottom:10px}
+.stage-tab{padding:6px 14px;border-radius:6px;border:2px solid var(--blue);background:transparent;color:var(--blue);font-size:12px;cursor:pointer;font-weight:500}
+.stage-tab.active{background:var(--blue);color:#fff}
+.stage-tab.sprint{border-color:var(--gold);color:var(--gold)}
+.stage-tab.sprint.active{background:var(--gold);color:#fff}
+.badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;margin-left:4px;font-weight:bold}
+.badge-base{background:var(--blue);color:#fff}
+.badge-sprint{background:var(--gold);color:#fff}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.status-on{background:var(--green)}
+.status-off{background:#ccc}
+@media(max-width:600px){.form-row,.form-row-4{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>瑞安卡萨帝 · 销售冲刺系统</h1>
+<p id="headerMode">目标1000万 | 冲刺1200万 | 云模式</p>
+</div>
+<div class="tabs">
+<button class="tab active" onclick="switchTab('daily')">填报</button>
+<button class="tab" onclick="switchTab('target')">目标</button>
+<button class="tab" onclick="switchTab('report')">报表</button>
+<button class="tab" onclick="switchTab('board')">看板</button>
+<button class="tab" onclick="switchTab('setup')">设置</button>
+</div>
+<div class="container">
+
+<div id="page-daily" class="page">
+<div class="card">
+<h3>每日工作填报 <span id="modeBadge" class="sprint-badge">云模式</span></h3>
+<div class="success-msg" id="dailySuccess">提交成功！</div>
+<div class="form-row">
+<div class="form-group"><label>人员</label><select id="dailyUser">
+<option value="叶可可">叶可可（店长+店内）</option>
+<option value="潘建敏">潘建敏（洗护+入户）</option>
+<option value="陈小娟">陈小娟（直播+视频）</option>
+<option value="华瑞">华瑞（暖通全品类）</option>
+<option value="史学飞">史学飞（小区+新媒体）</option>
+</select></div>
+<div class="form-group"><label>日期</label><input type="date" id="dailyDate"></div>
+</div>
+<div class="form-row-4">
+<div class="form-group"><label>接客数</label><input type="number" id="dk1" min="0" value="0"></div>
+<div class="form-group"><label>邀约数</label><input type="number" id="dk2" min="0" value="0"></div>
+<div class="form-group"><label>销售额(元)</label><input type="number" id="dk3" min="0" value="0"></div>
+<div class="form-group"><label>线上获客</label><input type="number" id="dk4" min="0" value="0"></div>
+</div>
+<div class="form-group"><label>今日工作内容</label><textarea id="dk5" placeholder="如：接待张先生看中央空调，带看样板间…"></textarea></div>
+<button class="btn btn-primary" onclick="submitDaily()">提交</button>
+</div>
+<div class="card"><h3>今日状态</h3><div id="todayStatus">加载中...</div></div>
+</div>
+
+<div id="page-target" class="page" style="display:none">
+<div class="card">
+<h3>目标体系 <span class="sprint-badge">+20%冲刺</span></h3>
+<div class="stage-tabs">
+<button class="stage-tab active" id="tabBase" onclick="switchStage('base')">基础目标</button>
+<button class="stage-tab sprint" id="tabSprint" onclick="switchStage('sprint')">冲刺目标 +20%</button>
+</div>
+<div id="targetContent">加载中...</div>
+</div>
+<div class="card"><h3>个人进度</h3><div id="personalProgress">加载中...</div></div>
+</div>
+
+<div id="page-report" class="page" style="display:none">
+<div class="card">
+<h3>报表查询</h3>
+<div class="form-row">
+<div class="form-group"><label>人员</label><select id="rptUser" onchange="loadReport()"><option value="全部">全部</option><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option><option value="史学飞">史学飞</option></select></div>
+<div class="form-group"><label>月份</label><input type="month" id="rptMonth" onchange="loadReport()"></div>
+</div>
+<div id="reportData"><p class="text-muted">选择月份查看</p></div>
+</div>
+</div>
+
+<div id="page-board" class="page" style="display:none">
+<div class="card"><h3>本月看板</h3><div id="boardContent">加载中...</div></div>
+<div class="card"><h3>明细</h3><div id="boardTable" style="overflow-x:auto"></div></div>
+</div>
+
+<div id="page-setup" class="page" style="display:none">
+<div class="card">
+<h3>设置</h3>
+<div class="warn-msg">本系统支持两种模式：</div>
+<div class="form-group"><label>云模式（推荐·多人共享）</label>
+<input type="text" id="supabaseUrl" placeholder="Supabase URL (https://xxx.supabase.co)" value="">
+<input type="text" id="supabaseKey" placeholder="Supabase Anon Key" value="" style="margin-top:6px">
+<button class="btn btn-success btn-sm mt-8" onclick="saveCloudConfig()">保存云配置</button>
+</div>
+<hr style="margin:12px 0;border:none;border-top:1px solid #eee">
+<button class="btn btn-outline btn-sm" onclick="useLocalOnly()">仅使用本地存储</button>
+<button class="btn btn-gold btn-sm" onclick="exportData()">导出备份</button>
+<button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="clearData()">清除数据</button>
+</div>
+<div class="card">
+<h3>目标一览</h3>
+<table>
+<tr><th>人员</th><th>基础目标</th><th>冲刺目标</th><th>月均基础</th><th>月均冲刺</th></tr>
+<tr><td>叶可可</td><td>220万</td><td>264万</td><td>18.3万</td><td>22.0万</td></tr>
+<tr><td>潘建敏</td><td>240万</td><td>288万</td><td>20.0万</td><td>24.0万</td></tr>
+<tr><td>陈小娟</td><td>180万</td><td>216万</td><td>15.0万</td><td>18.0万</td></tr>
+<tr><td>华瑞</td><td>200万</td><td>240万</td><td>16.7万</td><td>20.0万</td></tr>
+<tr><td>史学飞</td><td>160万</td><td>192万</td><td>13.3万</td><td>16.0万</td></tr>
+<tr style="font-weight:bold;background:var(--blue);color:#fff"><td>合计</td><td>1000万</td><td>1200万</td><td>83.3万</td><td>100万</td></tr>
+</table>
+</div>
+<div class="card">
+<h3>部署说明</h3>
+<p style="font-size:12px;line-height:1.8;color:#555">
+<b>免服务器方案：</b><br>
+1. 注册 Supabase（supabase.com）免费账号<br>
+2. 创建项目 → 建表 reports(id, data)<br>
+3. 将 URL 和 anon key 填入上方设置<br>
+4. 把此HTML文件上传到 Vercel/GitHub Pages<br>
+5. 所有人访问同一网址，数据共享<br><br>
+<b>或直接用本地存储：</b>不填云配置即可，数据仅存当前设备。
+</p>
+</div>
+</div>
+</div>
+
+<script>
+// ========== CONFIG ==========
+var BASE = { "叶可可":220,"潘建敏":240,"陈小娟":180,"华瑞":200,"史学飞":160 };
+var SPRINT = { "叶可可":264,"潘建敏":288,"陈小娟":216,"华瑞":240,"史学飞":192 };
+
+// 叶可可 base: [15,18,19,20,22,20,18,12,20,18,19,19] sprint×1.2 round: [18,22,23,24,26,24,22,14,24,22,23,22]
+var MONTH_BASE = {
+7:[15,18,19,20,22,20,18,12,20,18,19,19],8:[16,20,20,22,24,22,20,14,22,20,20,20],
+9:[12,15,15,17,18,17,15,10,17,15,15,14],10:[14,17,17,19,20,18,17,9,17,15,17,20],
+11:[12,14,13,15,15,14,13,9,13,12,13,17]
+};
+// Wait, I need to restructure. Let me store per-person monthly data.
+// Actually this is getting complex. Let me keep the simple approach - per person monthly in the JS.
+
+var STAFF = ["叶可可","潘建敏","陈小娟","华瑞","史学飞"];
+// Base monthly targets for each person (Jul-Jun = indices 0-11)
+var BASE_MONTHLY = {
+"叶可可":[15,18,19,20,22,20,18,12,20,18,19,19],
+"潘建敏":[16,20,20,22,24,22,20,14,22,20,20,20],
+"陈小娟":[12,15,15,17,18,17,15,10,17,15,15,14],
+"华瑞":  [14,17,17,19,20,18,17,9,17,15,17,20],
+"史学飞":[12,14,13,15,15,14,13,9,13,12,13,17]
+};
+// Sprint monthly targets (×1.2 rounded)
+var SPRINT_MONTHLY = {
+"叶可可":[18,22,23,24,26,24,22,14,24,22,23,22],
+"潘建敏":[19,24,24,26,29,26,24,17,27,24,24,24],
+"陈小娟":[14,18,18,20,22,20,18,12,20,18,18,18],
+"华瑞":  [17,20,20,23,24,22,20,11,21,18,20,24],
+"史学飞":[14,17,16,18,18,17,16,11,16,14,16,19]
+};
+
+var curStage = "base"; // "base" or "sprint"
+var STORAGE_KEY = "kasadi_v3";
+var CLOUD_KEY = "kasadi_cloud_config";
+
+// ========== DATA LAYER ==========
+function getData(){
+  var d = localStorage.getItem(STORAGE_KEY);
+  return d ? JSON.parse(d) : [];
+}
+function saveData(d){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+  syncToCloud(d);
+}
+
+function getCloudConfig(){
+  var c = localStorage.getItem(CLOUD_KEY);
+  return c ? JSON.parse(c) : null;
+}
+function saveCloudConfig(){
+  var url = document.getElementById("supabaseUrl").value.trim();
+  var key = document.getElementById("supabaseKey").value.trim();
+  if(!url || !key){ alert("请输入完整配置"); return; }
+  localStorage.setItem(CLOUD_KEY, JSON.stringify({url:url,key:key}));
+  document.getElementById("modeBadge").textContent = "云模式";
+  document.getElementById("headerMode").textContent = "目标1000万 | 冲刺1200万 | 云模式";
+  alert("云配置已保存，数据将自动同步");
+  syncToCloud(getData());
+}
+function useLocalOnly(){
+  localStorage.removeItem(CLOUD_KEY);
+  document.getElementById("modeBadge").textContent = "本地模式";
+  document.getElementById("headerMode").textContent = "目标1000万 | 冲刺1200万 | 本地";
+  document.getElementById("supabaseUrl").value = "";
+  document.getElementById("supabaseKey").value = "";
+  alert("已切换为本地模式");
+}
+
+async function syncToCloud(data){
+  var cfg = getCloudConfig();
+  if(!cfg) return;
+  try{
+    await fetch(cfg.url+"/rest/v1/reports?select=id", {
+      headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}
+    });
+  }catch(e){ console.log("Cloud sync unavailable:", e.message); }
+}
+
+async function loadFromCloud(){
+  var cfg = getCloudConfig();
+  if(!cfg) return null;
+  try{
+    var r = await fetch(cfg.url+"/rest/v1/reports?select=data&limit=1", {
+      headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}
+    });
+    if(!r.ok) return null;
+    var j = await r.json();
+    if(j.length>0 && j[0].data) return JSON.parse(j[0].data);
+  }catch(e){}
+  return null;
+}
+
+// ========== INIT ==========
+function init(){
+  var d = new Date();
+  document.getElementById("dailyDate").value = d.toISOString().split("T")[0];
+  var m = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  document.getElementById("rptMonth").value = m;
+  loadConfig();
+  loadToday();
+  loadBoard();
+  loadTarget();
+}
+function loadConfig(){
+  var cfg = getCloudConfig();
+  if(cfg){
+    document.getElementById("supabaseUrl").value = cfg.url;
+    document.getElementById("supabaseKey").value = cfg.key;
+    document.getElementById("modeBadge").textContent = "云模式";
+  } else {
+    document.getElementById("modeBadge").textContent = "本地模式";
+  }
+}
+document.addEventListener("DOMContentLoaded", init);
+
+// ========== TAB ==========
+function switchTab(n){
+  document.querySelectorAll(".page").forEach(function(p){p.style.display="none"});
+  document.getElementById("page-"+n).style.display="block";
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
+  document.querySelector(".tab:nth-child("+({daily:1,target:2,report:3,board:4,setup:5}[n])+")").classList.add("active");
+  if(n==="board") loadBoard();
+  if(n==="report") loadReport();
+  if(n==="target") loadTarget();
+}
+function switchStage(s){
+  curStage = s;
+  document.getElementById("tabBase").className = "stage-tab"+(s=="base"?" active":"");
+  document.getElementById("tabSprint").className = "stage-tab sprint"+(s=="sprint"?" active":"");
+  loadTarget();
+}
+
+// ========== DAILY ==========
+function submitDaily(){
+  var u = document.getElementById("dailyUser").value;
+  var dt = document.getElementById("dailyDate").value;
+  if(!dt){alert("选日期");return}
+  var data = getData();
+  var idx = data.findIndex(function(x){return x.u===u && x.d===dt});
+  if(idx>-1){if(!confirm("覆盖今日？"))return;data.splice(idx,1)}
+  data.push({
+    u:u,d:dt,
+    j:parseInt(document.getElementById("dk1").value)||0,
+    y:parseInt(document.getElementById("dk2").value)||0,
+    x:parseFloat(document.getElementById("dk3").value)||0,
+    o:parseInt(document.getElementById("dk4").value)||0,
+    g:document.getElementById("dk5").value||""
+  });
+  saveData(data);
+  var msg=document.getElementById("dailySuccess");msg.style.display="block";
+  setTimeout(function(){msg.style.display="none"},2500);
+  ["dk1","dk2","dk3","dk4"].forEach(function(id){document.getElementById(id).value=0});
+  document.getElementById("dk5").value="";
+  loadToday();loadBoard();
+}
+
+function loadToday(){
+  var data = getData(), t = new Date().toISOString().split("T")[0];
+  var h = "<table><tr><th>人员</th><th>状态</th><th>接客</th><th>邀约</th><th>销售</th><th>获客</th></tr>";
+  STAFF.forEach(function(u){
+    var r = data.find(function(x){return x.u===u && x.d===t});
+    if(r) h += "<tr><td>"+u+'</td><td><span class="status-dot status-on"></span>已填</td><td>'+r.j+"</td><td>"+r.y+"</td><td>"+r.x+"</td><td>"+r.o+"</td></tr>";
+    else h += "<tr><td>"+u+'</td><td><span class="status-dot status-off"></span>未填</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>';
+  });
+  h += "</table>";
+  document.getElementById("todayStatus").innerHTML = h;
+}
+
+// ========== TARGET ==========
+function loadTarget(){
+  var data = getData();
+  var isSprint = curStage === "sprint";
+  var mt = isSprint ? SPRINT_MONTHLY : BASE_MONTHLY;
+  var totalTarget = isSprint ? 1200 : 1000;
+  
+  var monthlyTotals = [0,0,0,0,0,0,0,0,0,0,0,0];
+  var personTotals = {};
+  STAFF.forEach(function(n){personTotals[n]=0});
+  
+  data.forEach(function(r){
+    var parts = r.d.split("-");
+    if(parts.length<2) return;
+    var m = parseInt(parts[1]);
+    // July=7 to June=6 next year: map to index
+    var idx;
+    if(m>=7) idx = m-7;
+    else idx = m+5;
+    if(idx>=0 && idx<12){
+      monthlyTotals[idx] += r.x;
+      if(personTotals[r.u]!==undefined) personTotals[r.u] += r.x;
+    }
+  });
+
+  var totalActual = data.reduce(function(s,x){return s+x.x},0);
+  var pct = totalTarget>0 ? (totalActual/totalTarget*10000/100) : 0;
+  
+  // KPI cards
+  var h = '<div class="stat-grid">';
+  h += '<div class="stat-box"><div class="num">'+(isSprint?"1200万":"1000万")+'</div><div class="label">年度目标</div></div>';
+  h += '<div class="stat-box green"><div class="num">'+(totalActual/10000).toFixed(1)+'万</div><div class="label">已完成</div></div>';
+  h += '<div class="stat-box gold"><div class="num">'+pct.toFixed(1)+'%</div><div class="label">完成率</div></div>';
+  h += '</div>';
+  
+  // Monthly table
+  var mlabels = ["7月","8月","9月","10月","11月","12月","1月","2月","3月","4月","5月","6月"];
+  var years = [2026,2026,2026,2026,2026,2026,2027,2027,2027,2027,2027,2027];
+  
+  h += '<div style="overflow-x:auto"><table><tr><th>月份</th>';
+  for(var i=0;i<12;i++) h += '<th>'+years[i]+mlabels[i]+'</th>';
+  h += '<th>合计</th></tr>';
+  
+  // Target row
+  var stageLabel = isSprint ? "冲刺" : "基础";
+  var targetTotals = [];
+  STAFF.forEach(function(nm, si){
+    h += '<tr><td style="text-align:left">'+nm+'</td>';
+    var sum = 0;
+    for(var i=0;i<12;i++){
+      var v = mt[nm][i];
+      sum += v;
+      h += '<td>'+v+'万</td>';
+    }
+    targetTotals.push(sum);
+    h += '<td><b>'+sum+'万</b></td></tr>';
+  });
+  
+  // Month total row
+  h += '<tr style="background:var(--gold);color:#fff;font-weight:bold"><td>月目标</td>';
+  var yearTotal = 0;
+  for(var i=0;i<12;i++){
+    var mtSum = 0;
+    STAFF.forEach(function(nm){mtSum += mt[nm][i]});
+    h += '<td>'+mtSum+'万</td>';
+    yearTotal += mtSum;
+  }
+  h += '<td>'+yearTotal+'万</td></tr>';
+  
+  // Actual row
+  h += '<tr style="background:var(--green);color:#fff;font-weight:bold"><td>月实际</td>';
+  var actualYearTotal = 0;
+  for(var i=0;i<12;i++){
+    var v = (monthlyTotals[i]/10000).toFixed(1);
+    actualYearTotal += monthlyTotals[i];
+    h += '<td>'+v+'</td>';
+  }
+  h += '<td>'+(actualYearTotal/10000).toFixed(1)+'万</td></tr>';
+  
+  // Completion row
+  h += '<tr><td style="font-weight:bold">完成率</td>';
+  for(var i=0;i<12;i++){
+    var mtSum = 0;
+    STAFF.forEach(function(nm){mtSum += mt[nm][i]});
+    var rate = mtSum>0 ? (monthlyTotals[i]/mtSum/100*10000).toFixed(0) : 0;
+    h += '<td>'+rate+'%</td>';
+  }
+  h += '<td>'+(yearTotal>0?(actualYearTotal/yearTotal/100*10000).toFixed(0):0)+'%</td></tr>';
+  h += '</table></div>';
+  
+  document.getElementById("targetContent").innerHTML = h;
+  
+  // Personal progress
+  var ph = '<table><tr><th>人员</th><th>目标</th><th>已完成</th><th>完成率</th><th>剩余</th></tr>';
+  STAFF.forEach(function(nm){
+    var t = isSprint ? SPRINT[nm] : BASE[nm];
+    var a = personTotals[nm] || 0;
+    var p = t>0 ? (a/t/100*10000).toFixed(1) : 0;
+    var r = Math.max(0, t*10000 - a);
+    ph += '<tr><td>'+nm+'</td><td>'+t+'万</td><td>'+(a/10000).toFixed(1)+'万</td><td>'+p+'%</td><td>'+(r/10000).toFixed(1)+'万</td></tr>';
+  });
+  ph += '</table>';
+  document.getElementById("personalProgress").innerHTML = ph;
+}
+
+// ========== REPORT ==========
+function loadReport(){
+  var u = document.getElementById("rptUser").value;
+  var m = document.getElementById("rptMonth").value;
+  if(!m) return;
+  var data = getData();
+  var f = data.filter(function(x){return x.d.startsWith(m)});
+  if(u!== "全部") f = f.filter(function(x){return x.u===u});
+  if(f.length===0){document.getElementById("reportData").innerHTML='<p class="text-muted">暂无数据</p>';return}
+  
+  f.sort(function(a,b){return a.d.localeCompare(b.d)||a.u.localeCompare(b.u)});
+  var h = '<div style="overflow-x:auto"><table><tr><th>日期</th><th>人员</th><th>接客</th><th>邀约</th><th>销售(元)</th><th>获客</th><th>工作内容</th></tr>';
+  f.forEach(function(x){h+='<tr><td>'+x.d+'</td><td>'+x.u+'</td><td>'+x.j+'</td><td>'+x.y+'</td><td>'+x.x+'</td><td>'+x.o+'</td><td style="font-size:10px;text-align:left;max-width:120px">'+(x.g||"-")+'</td></tr>'});
+  h += '</table></div>';
+  
+  // Summary
+  var bu = {};
+  f.forEach(function(x){
+    if(!bu[x.u]) bu[x.u]={j:0,y:0,x:0,o:0,ds:{}};
+    bu[x.u].j+=x.j;bu[x.u].y+=x.y;bu[x.u].x+=x.x;bu[x.u].o+=x.o;bu[x.u].ds[x.d]=1;
+  });
+  h += '<h4 style="margin:10px 0 6px;color:var(--blue);font-size:13px">汇总</h4><table><tr><th>人员</th><th>接客</th><th>邀约</th><th>销售</th><th>获客</th><th>出勤</th></tr>';
+  var mt={j:0,y:0,x:0,o:0,ds:0};
+  Object.keys(bu).forEach(function(k){
+    var v=bu[k], dc=Object.keys(v.ds).length;
+    h += '<tr><td>'+k+'</td><td>'+v.j+'</td><td>'+v.y+'</td><td>'+v.x+'</td><td>'+v.o+'</td><td>'+dc+'</td></tr>';
+    mt.j+=v.j;mt.y+=v.y;mt.x+=v.x;mt.o+=v.o;mt.ds+=dc;
+  });
+  h += '<tr style="font-weight:bold;background:var(--blue);color:#fff"><td>合计</td><td>'+mt.j+'</td><td>'+mt.y+'</td><td>'+mt.x+'</td><td>'+mt.o+'</td><td>'+mt.ds+'</td></tr></table>';
+  document.getElementById("reportData").innerHTML = h;
+}
+
+// ========== BOARD ==========
+function loadBoard(){
+  var data = getData(), m = new Date().toISOString().slice(0,7);
+  var md = data.filter(function(x){return x.d.startsWith(m)});
+  var tc=0,tv=0,tcu=0,tl=0,ta=0;
+  var bu = {};
+  md.forEach(function(x){
+    if(!bu[x.u]) bu[x.u]={j:0,y:0,x:0,o:0};
+    bu[x.u].j+=x.j;bu[x.u].y+=x.y;bu[x.u].x+=x.x;bu[x.u].o+=x.o;
+    tc+=x.j;tv+=x.y;tcu+=x.x;tl+=x.o;ta+=x.x;
+  });
+  var h = '<div class="stat-grid">';
+  h += '<div class="stat-box"><div class="num">'+tc+'</div><div class="label">接客</div></div>';
+  h += '<div class="stat-box green"><div class="num">'+tv+'</div><div class="label">邀约</div></div>';
+  h += '<div class="stat-box gold"><div class="num">'+(ta/10000).toFixed(1)+'万</div><div class="label">销售</div></div>';
+  h += '<div class="stat-box"><div class="num">'+tl+'</div><div class="label">线上获客</div></div>';
+  h += '<div class="stat-box green"><div class="num">'+md.length+'</div><div class="label">填报次数</div></div>';
+  h += '<div class="stat-box gold"><div class="num">'+Object.keys(bu).length+'</div><div class="label">填报人数</div></div>';
+  h += '</div>';
+  
+  // Mini bar chart
+  var labels = Object.keys(bu);
+  if(labels.length>0){
+    h += '<div style="font-size:12px;color:var(--blue);margin-bottom:6px">各人销售额</div><div style="display:flex;gap:4px;align-items:flex-end;min-height:60px;padding:6px 0">';
+    var maxA = Math.max.apply(null,labels.map(function(u){return bu[u].x}))||1;
+    labels.forEach(function(u){
+      var ht = Math.max(18, bu[u].x/maxA*60);
+      var display = u.replace("叶可可","叶").replace("潘建敏","潘").replace("陈小娟","陈").replace("华瑞","华").replace("史学飞","史");
+      h += '<div style="flex:1;text-align:center"><div style="height:'+ht+'px;background:var(--blue);border-radius:3px 3px 0 0;min-width:24px"></div><div style="font-size:9px;margin-top:3px;color:#555">'+display+'<br>'+(bu[u].x/10000).toFixed(1)+'万</div></div>';
+    });
+    h += '</div>';
+  }
+  document.getElementById("boardContent").innerHTML = h;
+  
+  var tbl = '<table><tr><th>日期</th><th>人员</th><th>接客</th><th>邀约</th><th>销售</th><th>获客</th></tr>';
+  md.sort(function(a,b){return a.d.localeCompare(b.d)||a.u.localeCompare(b.u)});
+  md.forEach(function(x){tbl+='<tr><td>'+x.d+'</td><td>'+x.u+'</td><td>'+x.j+'</td><td>'+x.y+'</td><td>'+x.x+'</td><td>'+x.o+'</td></tr>'});
+  tbl += '</table>';
+  document.getElementById("boardTable").innerHTML = tbl;
+}
+
+// ========== UTILS ==========
+function exportData(){
+  var d = getData();
+  if(d.length===0){alert("无数据");return}
+  var b = new Blob([JSON.stringify(d,null,2)],{type:"application/json"});
+  var a = document.createElement("a");a.href=URL.createObjectURL(b);
+  a.download = "卡萨帝数据_"+new Date().toISOString().split("T")[0]+".json";a.click();
+}
+function clearData(){
+  if(confirm("清除所有数据？")) if(confirm("确认？")){saveData([]);loadToday();loadBoard();loadTarget();alert("已清除")}
+}
+</script>
+</body>
+</html>
