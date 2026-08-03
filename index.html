@@ -100,6 +100,7 @@ tr:nth-child(even){background:var(--gray)}
 <option value="史学飞">史学飞</option>
 <option value="陈小娟">陈小娟</option>
 <option value="华瑞">华瑞</option>
+<option value="张友和">张友和</option>
 </select></div>
 <div class="form-group"><label>密码</label>
 <input type="password" id="loginPw" placeholder="输入密码" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -115,6 +116,7 @@ tr:nth-child(even){background:var(--gray)}
 <button class="tab" onclick="switchTab('target')">目标</button>
 <button class="tab" onclick="switchTab('report')">报表</button>
 <button class="tab" onclick="switchTab('board')">看板</button>
+<button class="tab" onclick="switchTab('newmedia')">新媒体</button>
 <button class="tab" onclick="switchTab('customers')">客户</button>
 <button class="tab" onclick="switchTab('setup')">设置</button>
 </div>
@@ -131,6 +133,7 @@ tr:nth-child(even){background:var(--gray)}
 <option value="史学飞">史学飞</option>
 <option value="陈小娟">陈小娟</option>
 <option value="华瑞">华瑞</option>
+<option value="张友和">张友和</option>
 </select></div>
 <div class="form-group"><label>日期</label><input type="date" id="dailyDate" onchange="loadTodayCust();var dt=this.value;if(dt)document.getElementById('custTime').value=dt"></div>
 </div>
@@ -223,7 +226,7 @@ tr:nth-child(even){background:var(--gray)}
 <div class="card">
 <h3>报表查询</h3>
 <div class="form-row">
-<div class="form-group"><label>人员</label><select id="rptUser" onchange="loadReport()"><option value="全部">全部</option><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="史学飞">史学飞</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option></select></div>
+<div class="form-group"><label>人员</label><select id="rptUser" onchange="loadReport()"><option value="全部">全部</option><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="史学飞">史学飞</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option><option value="张友和">张友和</option></select></div>
 <div class="form-group"><label>月份</label><input type="month" id="rptMonth" onchange="loadReport()"></div>
 </div>
 <div id="reportData"><p class="text-muted">选择月份查看</p></div>
@@ -232,7 +235,7 @@ tr:nth-child(even){background:var(--gray)}
 
 <div id="page-board" class="page" style="display:none">
 <div class="card"><h3>本月看板</h3>
-<div class="form-group"><label>人员筛选</label><select id="boardUser" onchange="loadBoard()"><option value="全部">全部人员</option><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="史学飞">史学飞</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option></select></div>
+<div class="form-group"><label>人员筛选</label><select id="boardUser" onchange="loadBoard()"><option value="全部">全部人员</option><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="史学飞">史学飞</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option><option value="张友和">张友和</option></select></div>
 <div id="boardContent">加载中...</div></div>
 <div class="card"><h3>明细</h3><div id="boardTable" style="overflow-x:auto"></div></div>
 </div>
@@ -249,12 +252,47 @@ tr:nth-child(even){background:var(--gray)}
 </div>
 </div>
 
+<div id="page-newmedia" class="page" style="display:none">
+<div class="card">
+<h3>新媒体每日工作填报</h3>
+<p class="text-muted" style="margin:-4px 0 8px">新媒体专员张友和负责为各位销售填写新媒体数据（抖音直播 / 抖音视频 / 小红书 / 高德）</p>
+<div class="success-msg" id="nmSuccess">提交成功！</div>
+<div class="form-row">
+<div class="form-group"><label>填报人</label><select id="nmUser">
+<option value="张友和">张友和</option>
+</select></div>
+<div class="form-group"><label>对应销售</label><select id="nmSales">
+<option value="叶可可">叶可可</option>
+<option value="潘建敏">潘建敏</option>
+<option value="陈小娟">陈小娟</option>
+<option value="华瑞">华瑞</option>
+<option value="史学飞">史学飞</option>
+</select></div>
+</div>
+<div class="form-group"><label>日期</label><input type="date" id="nmDate"></div>
+<div class="form-row-4">
+<div class="form-group"><label>抖音直播(场)</label><input type="number" id="nmZb" min="0" value="0"></div>
+<div class="form-group"><label>抖音视频(条)</label><input type="number" id="nmSp" min="0" value="0"></div>
+<div class="form-group"><label>小红书(条)</label><input type="number" id="nmXhs" min="0" value="0"></div>
+<div class="form-group"><label>高德(条)</label><input type="number" id="nmGd" min="0" value="0"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>线上获客(人)</label><input type="number" id="nmHk" min="0" value="0"></div>
+<div class="form-group"><label>销售额(元)</label><input type="number" id="nmSale" min="0" value="0"></div>
+</div>
+<div class="form-group"><label>今日工作内容</label><textarea id="nmG" placeholder="如：抖音直播2小时、剪辑发布视频3条、小红书笔记2篇、高德门店动态更新…"></textarea></div>
+<button class="btn btn-primary" onclick="submitNewMedia()">提交</button>
+</div>
+<div class="card"><h3>本月新媒体汇总</h3><div id="nmMonth">加载中...</div></div>
+<div class="card"><h3>填报记录</h3><div id="nmList">加载中...</div></div>
+</div>
+
 <div id="page-setup" class="page" style="display:none">
 <div class="card">
 <h3>设置</h3>
 <div class="form-group"><label>当前账号</label>
 <div style="display:flex;align-items:center;gap:8px">
-<select id="myIdentity" style="flex:1" disabled><option value="老板">老板（看全部）</option><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="史学飞">史学飞</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option></select>
+<select id="myIdentity" style="flex:1" disabled><option value="老板">老板（看全部）</option><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="史学飞">史学飞</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option><option value="张友和">张友和</option></select>
 <button class="btn btn-sm btn-outline" onclick="doLogout()">切换角色</button>
 </div>
 <div class="warn-msg" id="identityHint" style="display:none">⚠ 员工身份：接客信息只能看自己的；工作汇报全员共享。</div>
@@ -459,15 +497,20 @@ async function loadFromCloud(){
   try{
     var r1 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.1&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
     var r2 = await fetch(cfg.url+"/rest/v1/customers?select=data&id=eq.1&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
+    var r3 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.2&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
     var j1 = r1.ok ? await r1.json() : [];
     var j2 = r2.ok ? await r2.json() : [];
+    var j3 = r3.ok ? await r3.json() : [];
     var cloudDaily = (j1.length>0 && j1[0].data) ? JSON.parse(j1[0].data) : [];
     var cloudCusts = (j2.length>0 && j2[0].data) ? JSON.parse(j2[0].data) : [];
+    var cloudNewMedia = (j3.length>0 && j3[0].data) ? JSON.parse(j3[0].data) : [];
     var mergedDaily = mergeDaily(getData(), cloudDaily);
     var mergedCusts = mergeCustomers(getCustomers(), cloudCusts);
+    var mergedNewMedia = mergeNewMedia(getNewMedia(), cloudNewMedia);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedDaily));
     localStorage.setItem(CUST_KEY, JSON.stringify(mergedCusts));
-    return {daily:mergedDaily, customers:mergedCusts};
+    localStorage.setItem(NM_KEY, JSON.stringify(mergedNewMedia));
+    return {daily:mergedDaily, customers:mergedCusts, newmedia:mergedNewMedia};
   }catch(e){ console.log("Cloud load error:", e.message); return null; }
 }
 
@@ -488,6 +531,7 @@ function mergeCustomers(local, cloud){
 function init(){
   var d = new Date();
   document.getElementById("dailyDate").value = d.toISOString().split("T")[0];
+  document.getElementById("nmDate").value = d.toISOString().split("T")[0];
   document.getElementById("custTime").value = d.toISOString().split("T")[0];
   var m = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
   document.getElementById("rptMonth").value = m;
@@ -496,12 +540,13 @@ function init(){
   loadBoard();
   loadTarget();
   loadMonthlyProgress();
+  loadNewMedia();
   loadFromCloud().then(function(res){
-    if(res){ loadToday(); loadBoard(); loadTarget(); loadMonthlyProgress(); loadCustomerList(); }
+    if(res){ loadToday(); loadBoard(); loadTarget(); loadMonthlyProgress(); loadCustomerList(); loadNewMedia(); }
   });
   setInterval(function(){
     loadFromCloud().then(function(res){
-      if(res){ loadToday(); loadBoard(); loadMonthlyProgress(); loadCustomerList(); }
+      if(res){ loadToday(); loadBoard(); loadMonthlyProgress(); loadCustomerList(); loadNewMedia(); }
     });
   }, 60000);
 }
@@ -523,11 +568,12 @@ function switchTab(n){
   document.querySelectorAll(".page").forEach(function(p){p.style.display="none"});
   document.getElementById("page-"+n).style.display="block";
   document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
-  document.querySelector(".tab:nth-child("+({daily:1,target:2,report:3,board:4,setup:5}[n])+")").classList.add("active");
+  document.querySelector(".tab:nth-child("+({daily:1,target:2,report:3,board:4,newmedia:5,customers:6,setup:7}[n])+")").classList.add("active");
   if(n==="board") loadBoard();
   if(n==="report") loadReport();
   if(n==="target") loadTarget();
   if(n==="customers") loadCustomerList();
+  if(n==="newmedia") loadNewMedia();
 }
 function switchStage(s){
   curStage = s;
@@ -594,7 +640,7 @@ function loadToday(){
   var now = new Date();
   var mStr = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
   var md = data.filter(function(x){return x.d.startsWith(mStr)});
-  var list = STAFF;
+  var list = STAFF.concat(["张友和"]);
   var mu = {};
   list.forEach(function(n){mu[n]={j:0,y:0,x:0,o:0}});
   md.forEach(function(r){ if(mu[r.u]){mu[r.u].j+=r.j; mu[r.u].y+=r.y; mu[r.u].x+=r.x; mu[r.u].o+=r.o} });
@@ -627,6 +673,7 @@ function loadTarget(){
   data.forEach(function(r){
     var parts = r.d.split("-");
     if(parts.length<2) return;
+    if(STAFF.indexOf(r.u)<0) return;
     var m = parseInt(parts[1]);
     // July=7 to June=6 next year: map to index
     var idx;
@@ -937,6 +984,92 @@ function showFollowHistory(cid){
   document.getElementById("followHistoryModal").style.display="flex";
 }
 function closeFollowHistory(){document.getElementById("followHistoryModal").style.display="none"}
+
+// ========== NEW MEDIA ==========
+var NM_KEY = "kasadi_newmedia";
+function getNewMedia(){ try{ return JSON.parse(localStorage.getItem(NM_KEY))||[] }catch(e){ return [] } }
+function saveNewMedia(arr){ localStorage.setItem(NM_KEY, JSON.stringify(arr)); syncNewMediaToCloud(arr); }
+async function syncNewMediaToCloud(arr){
+  var cfg = getCloudConfig();
+  if(!cfg) return;
+  try{
+    await fetch(cfg.url+"/rest/v1/reports?id=eq.2", {
+      method:"POST",
+      headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"},
+      body: JSON.stringify({id:2, data: JSON.stringify(arr)})
+    });
+  }catch(e){ console.log("NewMedia sync error:", e.message); }
+}
+function mergeNewMedia(local, cloud){
+  var m = {};
+  local.forEach(function(r){var k=r.u+"|"+r.d; if(!m[k]||(r.ts||0)>=(m[k].ts||0)) m[k]=r});
+  cloud.forEach(function(r){var k=r.u+"|"+r.d; if(!m[k]||(r.ts||0)>(m[k].ts||0)) m[k]=r});
+  return Object.keys(m).map(function(k){return m[k]});
+}
+function submitNewMedia(){
+  var u = document.getElementById("nmSales").value;
+  var dt = document.getElementById("nmDate").value;
+  if(!dt){alert("请选择日期");return}
+  var arr = getNewMedia();
+  var idx = arr.findIndex(function(x){return x.u===u && x.d===dt});
+  if(idx>-1){ if(!confirm(u+" 当天已有填报，覆盖吗？")) return; arr.splice(idx,1); }
+  arr.push({
+    u:u, d:dt,
+    zb:parseInt(document.getElementById("nmZb").value)||0,
+    sp:parseInt(document.getElementById("nmSp").value)||0,
+    xhs:parseInt(document.getElementById("nmXhs").value)||0,
+    gd:parseInt(document.getElementById("nmGd").value)||0,
+    hk:parseInt(document.getElementById("nmHk").value)||0,
+    sale:parseFloat(document.getElementById("nmSale").value)||0,
+    g:document.getElementById("nmG").value||"",
+    ts:Date.now()
+  });
+  saveNewMedia(arr);
+  var msg=document.getElementById("nmSuccess"); msg.style.display="block";
+  setTimeout(function(){msg.style.display="none"},2500);
+  ["nmZb","nmSp","nmXhs","nmGd","nmHk","nmSale"].forEach(function(id){document.getElementById(id).value=0});
+  document.getElementById("nmG").value="";
+  loadNewMedia();
+}
+function loadNewMedia(){
+  var arr = getNewMedia();
+  var now = new Date();
+  var mStr = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+  var md = arr.filter(function(x){return x.d.startsWith(mStr)});
+  // 本月汇总
+  var mu = {};
+  STAFF.forEach(function(n){ mu[n]={zb:0,sp:0,xhs:0,gd:0,hk:0,sale:0}; });
+  md.forEach(function(r){ if(mu[r.u]){ mu[r.u].zb+=r.zb; mu[r.u].sp+=r.sp; mu[r.u].xhs+=r.xhs; mu[r.u].gd+=r.gd; mu[r.u].hk+=r.hk; mu[r.u].sale+=r.sale; } });
+  var h = '<div style="overflow-x:auto"><table><tr><th>人员</th><th>抖音直播(场)</th><th>抖音视频(条)</th><th>小红书(条)</th><th>高德(条)</th><th>线上获客</th><th>销售额(万)</th></tr>';
+  var tz=0,ts2=0,tx2=0,tg=0,th=0,tsa=0;
+  STAFF.forEach(function(n){
+    var v = mu[n];
+    h += '<tr><td>'+n+'</td><td>'+(v.zb||0)+'</td><td>'+(v.sp||0)+'</td><td>'+(v.xhs||0)+'</td><td>'+(v.gd||0)+'</td><td>'+(v.hk||0)+'</td><td>'+(v.sale/10000).toFixed(1)+'</td></tr>';
+    tz+=v.zb; ts2+=v.sp; tx2+=v.xhs; tg+=v.gd; th+=v.hk; tsa+=v.sale;
+  });
+  h += '<tr style="font-weight:bold;background:var(--blue);color:#fff"><td>合计</td><td>'+tz+'</td><td>'+ts2+'</td><td>'+tx2+'</td><td>'+tg+'</td><td>'+th+'</td><td>'+(tsa/10000).toFixed(1)+'</td></tr></table></div>';
+  document.getElementById("nmMonth").innerHTML = h;
+  // 当月填报记录
+  var recs = md.slice().sort(function(a,b){ return b.d.localeCompare(a.d)||a.u.localeCompare(b.u); });
+  if(recs.length===0){ document.getElementById("nmList").innerHTML='<p class="text-muted">本月暂无填报记录</p>'; return; }
+  var h2 = '<div style="overflow-x:auto"><table><tr><th>日期</th><th>人员</th><th>直播</th><th>视频</th><th>小红书</th><th>高德</th><th>获客</th><th>销售(元)</th><th>工作内容</th><th>操作</th></tr>';
+  recs.forEach(function(r){
+    var del = (isBoss()||r.u===getIdentity()) ? '<button class="btn-del" onclick="delNewMedia(&quot;'+r.u+'&quot;,&quot;'+r.d+'&quot;)">删</button>' : '-';
+    h2 += '<tr><td style="font-size:9px">'+r.d+'</td><td>'+r.u+'</td><td>'+(r.zb||0)+'</td><td>'+(r.sp||0)+'</td><td>'+(r.xhs||0)+'</td><td>'+(r.gd||0)+'</td><td>'+(r.hk||0)+'</td><td>'+(r.sale||0)+'</td><td style="font-size:9px;text-align:left;max-width:120px">'+(r.g||"-")+'</td><td>'+del+'</td></tr>';
+  });
+  h2 += '</table></div>';
+  document.getElementById("nmList").innerHTML = h2;
+}
+function delNewMedia(u,d){
+  var arr = getNewMedia();
+  var idx = arr.findIndex(function(x){return x.u===u && x.d===d});
+  if(idx<0) return;
+  if(!isBoss() && arr[idx].u!==getIdentity()){ alert("只有老板或本人可以删除"); return; }
+  if(!confirm("删除 "+u+" 在 "+d+" 的新媒体填报？")) return;
+  arr.splice(idx,1);
+  saveNewMedia(arr);
+  loadNewMedia();
+}
 
 // ========== REPORT ==========
 function loadReport(){
