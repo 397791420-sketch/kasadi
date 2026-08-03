@@ -267,6 +267,7 @@ tr:nth-child(even){background:var(--gray)}
 <option value="陈小娟">陈小娟</option>
 <option value="华瑞">华瑞</option>
 <option value="史学飞">史学飞</option>
+<option value="繁荣家电">繁荣家电</option>
 </select></div>
 </div>
 <div class="form-group"><label>日期</label><input type="date" id="nmDate"></div>
@@ -1038,11 +1039,11 @@ function loadNewMedia(){
   var md = arr.filter(function(x){return x.d.startsWith(mStr)});
   // 本月汇总
   var mu = {};
-  STAFF.forEach(function(n){ mu[n]={zb:0,sp:0,xhs:0,gd:0,hk:0,sale:0}; });
+  STAFF.concat(["繁荣家电"]).forEach(function(n){ mu[n]={zb:0,sp:0,xhs:0,gd:0,hk:0,sale:0}; });
   md.forEach(function(r){ if(mu[r.u]){ mu[r.u].zb+=r.zb; mu[r.u].sp+=r.sp; mu[r.u].xhs+=r.xhs; mu[r.u].gd+=r.gd; mu[r.u].hk+=r.hk; mu[r.u].sale+=r.sale; } });
   var h = '<div style="overflow-x:auto"><table><tr><th>人员</th><th>抖音直播(场)</th><th>抖音视频(条)</th><th>小红书(条)</th><th>高德(条)</th><th>线上获客</th><th>销售额(万)</th></tr>';
   var tz=0,ts2=0,tx2=0,tg=0,th=0,tsa=0;
-  STAFF.forEach(function(n){
+  STAFF.concat(["繁荣家电"]).forEach(function(n){
     var v = mu[n];
     h += '<tr><td>'+n+'</td><td>'+(v.zb||0)+'</td><td>'+(v.sp||0)+'</td><td>'+(v.xhs||0)+'</td><td>'+(v.gd||0)+'</td><td>'+(v.hk||0)+'</td><td>'+(v.sale/10000).toFixed(1)+'</td></tr>';
     tz+=v.zb; ts2+=v.sp; tx2+=v.xhs; tg+=v.gd; th+=v.hk; tsa+=v.sale;
