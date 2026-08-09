@@ -378,7 +378,7 @@ function doLogin(){
   var sp = getStoredPw(u);
   if(u==="老板" && sp==="") sp = BOSS_DEFAULT;
   if(sp!=="" && p!==sp){ alert("密码错误，请重试"); return; }
-  if(sp==="") localStorage.setItem(PW_PREFIX+u, p);
+  if(sp===""){ localStorage.setItem(PW_PREFIX+u, p); syncPwToCloud(); }
   localStorage.setItem(LOGIN_KEY, u);
   document.getElementById("loginOverlay").style.display = "none";
   document.getElementById("loginPw").value = "";
@@ -398,6 +398,7 @@ function changePw(){
   var p = document.getElementById("newPw").value;
   if(!p || p.length<4){ alert("新密码至少4位"); return; }
   localStorage.setItem(PW_PREFIX+u, p);
+  syncPwToCloud();
   document.getElementById("newPw").value = "";
   alert("密码已修改");
 }
@@ -479,10 +480,14 @@ async function syncToCloud(data){
   var cfg = getCloudConfig();
   if(!cfg) return;
   try{
+    var r0 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.1&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
+    var cloud0 = [];
+    if(r0.ok){ var j0 = await r0.json(); if(j0.length>0 && j0[0].data){ try{ cloud0 = JSON.parse(j0[0].data)||[]; }catch(e){} } }
+    var merged0 = mergeDaily(data, cloud0);
     await fetch(cfg.url+"/rest/v1/reports?id=eq.1", {
       method:"POST",
       headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"},
-      body: JSON.stringify({id:1, data: JSON.stringify(data)})
+      body: JSON.stringify({id:1, data: JSON.stringify(merged0)})
     });
   }catch(e){ console.log("Cloud sync error:", e.message); }
 }
@@ -491,10 +496,14 @@ async function syncCustomersToCloud(arr){
   var cfg = getCloudConfig();
   if(!cfg) return;
   try{
+    var r0 = await fetch(cfg.url+"/rest/v1/customers?select=data&id=eq.1&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
+    var cloud0 = [];
+    if(r0.ok){ var j0 = await r0.json(); if(j0.length>0 && j0[0].data){ try{ cloud0 = JSON.parse(j0[0].data)||[]; }catch(e){} } }
+    var merged0 = mergeCustomers(arr, cloud0);
     await fetch(cfg.url+"/rest/v1/customers?id=eq.1", {
       method:"POST",
       headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"},
-      body: JSON.stringify({id:1, data: JSON.stringify(arr)})
+      body: JSON.stringify({id:1, data: JSON.stringify(merged0)})
     });
   }catch(e){ console.log("Customers sync error:", e.message); }
 }
@@ -506,6 +515,7 @@ async function loadFromCloud(){
     var r1 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.1&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
     var r2 = await fetch(cfg.url+"/rest/v1/customers?select=data&id=eq.1&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
     var r3 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.2&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
+    var r4 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.4&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
     var j1 = r1.ok ? await r1.json() : [];
     var j2 = r2.ok ? await r2.json() : [];
     var j3 = r3.ok ? await r3.json() : [];
@@ -519,6 +529,15 @@ async function loadFromCloud(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedDaily));
     localStorage.setItem(CUST_KEY, JSON.stringify(mergedCusts));
     localStorage.setItem(NM_KEY, JSON.stringify(mergedNewMedia));
+    if(mergedDaily.length > cloudDaily.length) syncToCloud(mergedDaily);
+    if(mergedCusts.length > cloudCusts.length) syncCustomersToCloud(mergedCusts);
+    if(mergedNewMedia.length > cloudNewMedia.length) syncNewMediaToCloud(mergedNewMedia);
+    var cloudPw = (j4.length>0 && j4[0].data) ? JSON.parse(j4[0].data) : null;
+    if(cloudPw && typeof cloudPw === "object"){
+      ["老板","叶可可","潘建敏","史学飞","陈小娟","华瑞","张友和"].forEach(function(n){
+        if(!getStoredPw(n) && cloudPw[n]) localStorage.setItem(PW_PREFIX+n, cloudPw[n]);
+      });
+    }
     return {daily:mergedDaily, customers:mergedCusts, newmedia:mergedNewMedia};
   }catch(e){ console.log("Cloud load error:", e.message); return null; }
 }
@@ -1013,12 +1032,32 @@ async function syncNewMediaToCloud(arr){
   var cfg = getCloudConfig();
   if(!cfg) return;
   try{
+    var r0 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.2&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
+    var cloud0 = [];
+    if(r0.ok){ var j0 = await r0.json(); if(j0.length>0 && j0[0].data){ try{ cloud0 = JSON.parse(j0[0].data)||[]; }catch(e){} } }
+    var merged0 = mergeNewMedia(arr, cloud0);
     await fetch(cfg.url+"/rest/v1/reports?id=eq.2", {
       method:"POST",
       headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"},
-      body: JSON.stringify({id:2, data: JSON.stringify(arr)})
+      body: JSON.stringify({id:2, data: JSON.stringify(merged0)})
     });
   }catch(e){ console.log("NewMedia sync error:", e.message); }
+}
+async function syncPwToCloud(){
+  var cfg = getCloudConfig();
+  if(!cfg) return;
+  try{
+    var map = {};
+    ["老板","叶可可","潘建敏","史学飞","陈小娟","华瑞","张友和"].forEach(function(n){
+      var v = getStoredPw(n);
+      if(v) map[n] = v;
+    });
+    await fetch(cfg.url+"/rest/v1/reports?id=eq.4", {
+      method:"POST",
+      headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"},
+      body: JSON.stringify({id:4, data: JSON.stringify(map)})
+    });
+  }catch(e){ console.log("Pw sync error:", e.message); }
 }
 function mergeNewMedia(local, cloud){
   var m = {};
