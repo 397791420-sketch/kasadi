@@ -15,8 +15,8 @@ body{background:var(--gray);min-height:100vh;padding-bottom:80px}
 .header{background:linear-gradient(135deg,var(--blue),#0f3460);color:#fff;padding:14px 16px;text-align:center;position:sticky;top:0;z-index:100}
 .header h1{font-size:17px;margin-bottom:2px}
 .header p{font-size:11px;opacity:.85}
-.tabs{display:flex;background:#fff;position:sticky;top:50px;z-index:99;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow-x:auto;flex-wrap:nowrap}
-.tab{padding:9px 10px;font-size:12px;border:none;background:transparent;cursor:pointer;white-space:nowrap;color:#666;border-bottom:3px solid transparent;flex-shrink:0}
+.tabs{display:flex;background:#fff;position:sticky;top:50px;z-index:99;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding:2px 0}
+.tab{padding:13px 14px;font-size:13px;min-height:46px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;cursor:pointer;white-space:nowrap;color:#666;border-bottom:3px solid transparent;flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.06)}
 .tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:bold}
 .container{max-width:800px;margin:0 auto;padding:10px}
 .card{background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
@@ -112,13 +112,15 @@ tr:nth-child(even){background:var(--gray)}
 <p id="headerMode">目标1200万 | 冲刺1500万 | 5人 | 云模式</p>
 </div>
 <div class="tabs">
-<button class="tab active" onclick="switchTab('daily')">填报</button>
-<button class="tab" onclick="switchTab('target')">目标</button>
-<button class="tab" onclick="switchTab('report')">报表</button>
-<button class="tab" onclick="switchTab('board')">看板</button>
-<button class="tab" onclick="switchTab('newmedia')">新媒体</button>
-<button class="tab" onclick="switchTab('customers')">客户</button>
-<button class="tab" onclick="switchTab('setup')">设置</button>
+<button class="tab active" data-tab="daily" onclick="switchTab('daily')">填报</button>
+<button class="tab" data-tab="board" onclick="switchTab('board')">看板</button>
+<button class="tab" data-tab="rank" onclick="switchTab('rank')">排行榜</button>
+<button class="tab" data-tab="perf" onclick="switchTab('perf')">绩效</button>
+<button class="tab" data-tab="newmedia" onclick="switchTab('newmedia')">新媒体</button>
+<button class="tab" data-tab="customers" onclick="switchTab('customers')">客户<span id="tabCustBadge" style="display:inline-block;background:var(--red);color:#fff;border-radius:8px;padding:0 6px;font-size:10px;margin-left:3px"></span></button>
+<button class="tab" data-tab="target" onclick="switchTab('target')">目标</button>
+<button class="tab" data-tab="report" onclick="switchTab('report')">报表</button>
+<button class="tab" data-tab="setup" onclick="switchTab('setup')">设置</button>
 </div>
 <div class="container">
 
@@ -133,6 +135,18 @@ tr:nth-child(even){background:var(--gray)}
 <div class="form-row">
 <div class="form-group"><label>到店日期</label><input type="date" id="custTime"></div>
 <div class="form-group"><label>接待销售</label><select id="custSales"><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option><option value="史学飞">史学飞</option></select></div>
+</div>
+<div class="form-group"><label>客户来源</label>
+<select id="custSource">
+<option value="进店">进店</option>
+<option value="邀约">邀约</option>
+<option value="设计师介绍">设计师介绍</option>
+<option value="老客户转介绍">老客户转介绍</option>
+<option value="线上">线上</option>
+<option value="小区">小区</option>
+<option value="渠道">渠道</option>
+<option value="其他">其他</option>
+</select>
 </div>
 <div class="form-group"><label>意向</label>
 <div class="radio-group">
@@ -154,7 +168,7 @@ tr:nth-child(even){background:var(--gray)}
 <button class="btn btn-primary" onclick="addCustomer()">添加客户</button>
 <div class="mt-8" id="todayCustList"><p class="text-muted">今日暂无记录</p></div>
 <div class="card">
-<h3>每日工作填报 <span id="modeBadge" class="sprint-badge">云模式</span> <span id="meBadge" class="sprint-badge" style="background:var(--blue)">身份未选</span></h3>
+<h3>每日工作填报 <span id="modeBadge" class="sprint-badge">云模式</span> <span id="meBadge" class="sprint-badge" style="background:var(--blue)">身份未选</span> <span id="verBadge" class="sprint-badge" style="background:#888">V8.9</span></h3>
 <div class="success-msg" id="dailySuccess">提交成功！</div>
 <div class="form-row">
 <div class="form-group"><label>人员</label><select id="dailyUser">
@@ -244,15 +258,47 @@ tr:nth-child(even){background:var(--gray)}
 <div class="card"><h3>本月看板</h3>
 <div class="form-group"><label>人员筛选</label><select id="boardUser" onchange="loadBoard()"><option value="全部">全部人员</option><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="史学飞">史学飞</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option><option value="张友和">张友和</option></select></div>
 <div id="boardContent">加载中...</div></div>
-<div class="card"><h3>明细</h3><div id="boardTable" style="overflow-x:auto"></div></div>
+<div class="card"><h3>本月填报明细</h3><div id="boardTable" style="overflow-x:auto"></div></div>
+</div>
+
+<div id="page-rank" class="page" style="display:none">
+<div class="card">
+<h3>排行榜 <span class="sprint-badge" style="background:var(--gold);color:#333">业绩对比</span></h3>
+<div class="form-group"><label>统计周期</label><select id="rankPeriod" onchange="loadRank()"><option value="month">本月</option><option value="week">本周</option></select></div>
+<div id="rankBody">加载中...</div>
+</div>
+</div>
+
+<div id="page-perf" class="page" style="display:none">
+<div class="card">
+<h3>月度绩效分 <span class="sprint-badge" style="background:var(--gold);color:#333">满分500</span></h3>
+<div class="form-group"><label>月份</label><input type="month" id="perfMonth" onchange="loadPerf()"></div>
+<div id="perfContent">加载中...</div>
+</div>
+<div class="card">
+<h3 style="font-size:13px">绩效规则（按日报和客户登记自动计算）</h3>
+<p style="font-size:11px;color:#777;line-height:1.9">
+· 日报漏填 1 天：-10 分<br>
+· 电话量 / 入户 / 渠道 / 直播 4 项一天内全都没做：-10 分/天<br>
+· 直播每周满 2 场，少 1 场：-10 分<br>
+· 邀约客户 1 天超过 2 个：+10 分/天<br>
+· 当周销售额突破 10 万：+50 分/次<br>
+· 每月以 500 分起算
+</p>
+</div>
 </div>
 
 <div id="page-customers" class="page" style="display:none">
 <div class="card">
+<h3>今日待跟进 <span id="followRemindCount" class="sprint-badge" style="background:var(--red)">0</span></h3>
+<div id="followRemindList"><p class="text-muted">加载中...</p></div>
+</div>
+<div class="card">
 <h3>客户管理</h3>
 <div class="form-row">
-<div class="form-group"><label>销售人员</label><select id="custFilterUser" onchange="loadCustomerList()"><option value="全部">全部</option></select></div>
+<div class="form-group"><label>销售人员</label><select id="custFilterUser" onchange="window.__remindUser=null;loadCustomerList()"><option value="全部">全部</option></select></div>
 <div class="form-group"><label>意向筛选</label><select id="custFilterIntent" onchange="loadCustomerList()"><option value="全部">全部</option><option value="S">S高意向</option><option value="A">A有意向</option><option value="B">B进店看看</option></select></div>
+<div class="form-group"><label>来源筛选</label><select id="custFilterSrc" onchange="loadCustomerList()"><option value="全部">全部</option><option value="进店">进店</option><option value="邀约">邀约</option><option value="设计师介绍">设计师介绍</option><option value="老客户转介绍">老客户转介绍</option><option value="线上">线上</option><option value="小区">小区</option><option value="渠道">渠道</option><option value="其他">其他</option></select></div>
 </div>
 <div class="form-group"><label>搜索</label><input type="text" id="custFilterSearch" placeholder="姓名/电话/地址" oninput="loadCustomerList()"></div>
 <div id="customerList"><p class="text-muted">暂无客户数据</p></div>
@@ -298,6 +344,7 @@ tr:nth-child(even){background:var(--gray)}
 <div id="page-setup" class="page" style="display:none">
 <div class="card">
 <h3>设置</h3>
+<p style="font-size:11px;color:#888;margin:0 0 8px">系统版本：<span id="verText" style="color:var(--blue)"></span>　·　数据云端自动同步</p>
 <div class="form-group"><label>当前账号</label>
 <div style="display:flex;align-items:center;gap:8px">
 <select id="myIdentity" style="flex:1" disabled><option value="老板">老板（看全部）</option><option value="叶可可">叶可可</option><option value="潘建敏">潘建敏</option><option value="史学飞">史学飞</option><option value="陈小娟">陈小娟</option><option value="华瑞">华瑞</option><option value="张友和">张友和</option></select>
@@ -332,6 +379,7 @@ tr:nth-child(even){background:var(--gray)}
 <div class="form-group"><label>跟进日期</label><input type="date" id="followDate"></div>
 <div class="form-group"><label>跟进方式</label>
 <select id="followType"><option value="二次进店">二次进店</option><option value="电话回访">电话回访</option><option value="微信跟进">微信跟进</option><option value="其他">其他</option></select></div>
+<div class="form-group"><label>下次跟进日期（选填，到日自动提醒）</label><input type="date" id="followNext"></div>
 <div class="form-group"><label>跟进内容</label><textarea id="followNote" placeholder="记录这次沟通情况、客户意向变化等"></textarea></div>
 <div style="display:flex;gap:8px;margin-top:4px">
 <button class="btn btn-success" style="flex:1" onclick="saveFollow()">保存跟进</button>
@@ -416,6 +464,8 @@ function applyIdentityUI(){
   if(hint) hint.style.display = isBoss() ? "none" : "block";
   var ov = document.getElementById("loginOverlay");
   if(ov) ov.style.display = v==="" ? "flex" : "none";
+  var pt = document.querySelector('.tab[data-tab="perf"]');
+  if(pt) pt.style.display = isBoss() ? "" : "none";
 }
 function canDel(x){ return isBoss() || (x.s||x.u)===getIdentity(); }
 // Base monthly targets for each person (Jul-Jun = indices 0-11)
@@ -441,6 +491,8 @@ var curStage = "base"; // "base" or "sprint"
 var STORAGE_KEY = "kasadi_v3";
 var CLOUD_KEY = "kasadi_cloud_config";
 var CLOUD_PRESET = { url:"https://ifligsvzbuzjiprizkng.supabase.co", key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmbGlnc3Z6YnV6amlwcml6a25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjY2NjEsImV4cCI6MjEwMTIwMjY2MX0.3gw9gT0vVY6yPXsNIVXQcKDjs29HWnKKEInXKb0_8lE" }; // 填入URL和anon key后，所有设备打开即用，无需各自填写
+var SYS_VER = "V9.0（2026-08-09）";
+var PERF_START = "2026-08-10"; // 绩效从8月10日开始统计，此前数据不计分
 
 // ========== DATA LAYER ==========
 function getData(){
@@ -555,6 +607,184 @@ function mergeCustomers(local, cloud){
   return Object.keys(m).map(function(k){return m[k]});
 }
 
+// ========== RANK (排行榜) ==========
+function weekRange(){
+  var now = new Date();
+  var day = now.getDay() || 7;
+  var mon = new Date(now); mon.setDate(now.getDate()-(day-1));
+  var sun = new Date(mon); sun.setDate(mon.getDate()+6);
+  function fmt(x){ return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0"); }
+  return {from:fmt(mon), to:fmt(sun)};
+}
+function loadRank(){
+  var period = document.getElementById("rankPeriod").value;
+  var now = new Date();
+  var mStr = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+  var from, to;
+  if(period==="week"){ var w=weekRange(); from=w.from; to=w.to; }
+  else { from=mStr+"-01"; to=mStr+"-31"; }
+  var daily = getData(), custs = getCustomers();
+  var rows = STAFF.map(function(name){
+    var sale=0, tel=0;
+    daily.forEach(function(r){ if(r.u===name && r.d>=from && r.d<=to){ sale+=(r.x||0); tel+=(r.tel||0); } });
+    var jk=0, yi=0, sNum=0;
+    custs.forEach(function(c){ var ds=c.t||c.d||""; if((c.s||c.u)===name && ds>=from && ds<=to){ jk++; if(c.intent==="S"){yi++;sNum++;} else if(c.intent==="A"){yi++;} } });
+    return {name:name, sale:sale, tel:tel, jk:jk, yi:yi, sNum:sNum};
+  });
+  rows.sort(function(a,b){ return b.sale-a.sale; });
+  var rankTxt = ["🥇","🥈","🥉"];
+  var mIdx = now.getMonth();
+  var h = '<p style="font-size:11px;color:#888;margin:0 0 8px">'+(period==="week"?("本周 "+from+" ~ "+to):("本月 "+mStr))+' · 按销售额排序 · 电话量/接客量/意向客户同步对比</p>';
+  h += '<div style="overflow-x:auto"><table class="cust-table"><tr><th>排名</th><th>人员</th><th>销售额</th><th>完成率</th><th>电话量</th><th>接客量</th><th>意向客户</th><th>S高意向</th></tr>';
+  var maxSale = Math.max.apply(null, rows.map(function(r){return r.sale;})) || 1;
+  rows.forEach(function(r, idx){
+    var rk = idx<3 ? rankTxt[idx] : (idx+1);
+    var barW = Math.max(5, Math.round(r.sale/maxSale*100));
+    var pct = (period==="month" && MONTH_BASE[r.name]) ? (r.sale/10000/(MONTH_BASE[r.name][mIdx]||1)*100).toFixed(1)+"%" : "-";
+    h += '<tr><td style="font-size:18px">'+rk+'</td><td><b>'+r.name+'</b></td><td>'+((r.sale/10000).toFixed(2))+'万<div style="background:linear-gradient(90deg,var(--gold),#f0a63a);height:6px;border-radius:3px;width:'+barW+'%"></div></td><td>'+(period==="month"?pct:"-")+'</td><td>'+r.tel+'</td><td>'+r.jk+'</td><td>'+r.yi+'</td><td>'+r.sNum+'</td></tr>';
+  });
+  h += '</table></div>';
+  document.getElementById("rankBody").innerHTML = h;
+}
+
+// ========== FOLLOW REMIND (今日待跟进) ==========
+function getFollowDeadline(c){
+  if(c.nextD){
+    var nd = new Date(c.nextD.replace(/-/g,"/")+" 00:00:00");
+    if(!isNaN(nd.getTime())) return nd;
+  }
+  var last = c.t || c.d || "";
+  (c.follows||[]).forEach(function(f){ if(f.d && f.d>last) last=f.d; });
+  if(!last) return null;
+  var days = c.intent==="S" ? 2 : (c.intent==="A" ? 3 : 7);
+  var dt = new Date(last.replace(/-/g,"/")+" 00:00:00");
+  if(isNaN(dt.getTime())) return null;
+  dt.setDate(dt.getDate()+days);
+  return dt;
+}
+function goFollowPerson(n){
+  var sel = document.getElementById("custFilterUser");
+  if(sel) sel.value = n;
+  var si = document.getElementById("custFilterIntent"); if(si) si.value = "全部";
+  var ss = document.getElementById("custFilterSrc"); if(ss) ss.value = "全部";
+  var sq = document.getElementById("custFilterSearch"); if(sq) sq.value = "";
+  window.__remindUser = n;
+  loadCustomerList();
+  loadFollowRemind();
+  switchTab("customers");
+}
+function resetRemindFilter(){
+  window.__remindUser = null;
+  var sel = document.getElementById("custFilterUser"); if(sel) sel.value = "全部";
+  loadCustomerList();
+  loadFollowRemind();
+}
+function loadFollowRemind(){
+  var all = getCustomers();
+  if(!isBoss()) all = all.filter(function(x){return (x.s||x.u)===getIdentity()});
+  if(isBoss() && window.__remindUser && window.__remindUser!=="全部") all = all.filter(function(x){return (x.s||x.u)===window.__remindUser});
+  var today = new Date(); today.setHours(0,0,0,0);
+  var list = [];
+  all.forEach(function(c){
+    var dl = getFollowDeadline(c);
+    if(dl && dl.getTime() <= today.getTime()){
+      list.push({c:c, od:Math.floor((today.getTime()-dl.getTime())/86400000)});
+    }
+  });
+  var pri = {S:0,A:1,B:2};
+  list.sort(function(a,b){ return pri[a.c.intent]!==pri[b.c.intent] ? pri[a.c.intent]-pri[b.c.intent] : b.od-a.od; });
+  var el = document.getElementById("followRemindList");
+  var cnt = document.getElementById("followRemindCount");
+  var tb = document.getElementById("tabCustBadge");
+  if(!el) return;
+  if(list.length===0){
+    el.innerHTML = '<p class="text-muted" style="margin:0">✅ 今日无待跟进客户</p>';
+    if(cnt) cnt.textContent = "0";
+    if(tb) tb.textContent = "";
+    return;
+  }
+  if(cnt) cnt.textContent = list.length;
+  if(tb) tb.textContent = " "+list.length;
+  var h = '<div style="overflow-x:auto"><table class="cust-table"><tr><th>客户</th><th>电话</th><th>意向</th><th>品类</th><th>接待</th><th>来源</th><th>上次跟进</th><th>超时</th><th>操作</th></tr>';
+  list.forEach(function(item){
+    var c=item.c, cid=c.id||(c.name+"|"+c.phone);
+    var badge="intent-"+c.intent.toLowerCase(), label={S:"高意向",A:"有意向",B:"进店看看"}[c.intent]||c.intent;
+    var last=c.t||c.d||"-";
+    (c.follows||[]).forEach(function(f){ if(f.d && f.d>last) last=f.d; });
+    var cls = item.od>0 ? 'style="color:var(--red);font-weight:bold"' : 'style="color:#e67e22;font-weight:bold"';
+    h += '<tr><td><b>'+c.name+'</b></td><td>'+(c.phone||"-")+'</td><td><span class="'+badge+'">'+label+'</span></td><td>'+(c.cates?c.cates.join("/"):"-")+'</td><td>'+(c.s||c.u)+'</td><td style="font-size:9px">'+(c.src||"-")+'</td><td>'+last+'</td><td '+cls+'>'+(item.od>0?(item.od+"天"):"今天到期")+'</td><td><button class="follow-btn" onclick="showFollowModal(\''+cid+'\')">跟进</button></td></tr>';
+  });
+  h += '</table></div>';
+  if(isBoss() && window.__remindUser && window.__remindUser!=="全部"){
+    h += '<p style="font-size:11px;color:#888;margin-top:6px">正在查看 <b>'+window.__remindUser+'</b> 的待跟进客户 · <a style="color:var(--blue);cursor:pointer" onclick="resetRemindFilter()">显示全部</a></p>';
+  }
+  el.innerHTML = h;
+}
+
+// ========== PERF (绩效分) ==========
+function mondayKey(ds){
+  var dt = new Date(ds.replace(/-/g,"/"));
+  var day = dt.getDay() || 7;
+  var mon = new Date(dt); mon.setDate(dt.getDate() - (day-1));
+  return mon.getFullYear()+"-"+String(mon.getMonth()+1).padStart(2,"0")+"-"+String(mon.getDate()).padStart(2,"0");
+}
+function loadPerf(){
+  var el = document.getElementById("perfMonth");
+  if(!el) return;
+  var m = el.value;
+  if(!m){ m = new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0"); el.value = m; }
+  var parts = m.split("-"), year=+parts[0], month=+parts[1];
+  var now = new Date();
+  var isCur = (year===now.getFullYear() && month===now.getMonth()+1);
+  var lastDay = isCur ? now.getDate() : new Date(year, month, 0).getDate();
+  var ps = PERF_START.split("-"), psY=+ps[0], psM=+ps[1], psD=+ps[2];
+  if(year<psY || (year===psY && month<psM)){
+    document.getElementById("perfContent").innerHTML = '<div style="padding:24px;text-align:center;color:#999">绩效从 <b>'+PERF_START+'</b> 开始统计，此前的月份不计算</div>';
+    return;
+  }
+  var startDay = (year===psY && month===psM) ? psD : 1;
+  var data = getData(), custs = getCustomers();
+  var md = data.filter(function(x){return x.d>=PERF_START && x.d.startsWith(m) && STAFF.indexOf(x.u)>=0});
+  var res = {};
+  STAFF.forEach(function(n){
+    res[n] = {reports:{}, none:0, liveWeeks:{}, saleWeeks:{}, inviteDays:{}};
+  });
+  md.forEach(function(x){
+    var r = res[x.u];
+    r.reports[x.d]=1;
+    if(!(x.tel||0) && !(x.rh||0) && !(x.qd||0) && !(x.live||0)) r.none++;
+    var wk = mondayKey(x.d);
+    r.liveWeeks[wk]=(r.liveWeeks[wk]||0)+(x.live||0);
+    r.saleWeeks[wk]=(r.saleWeeks[wk]||0)+(x.x||0);
+  });
+  custs.forEach(function(c){
+    if(c.src!=="邀约") return;
+    var p=c.s||c.u; if(!res[p]) return;
+    var ds=c.t||c.d||""; if(!ds.startsWith(m)) return;
+    res[p].inviteDays[ds]=(res[p].inviteDays[ds]||0)+1;
+  });
+  var h = '<div style="overflow-x:auto"><table><tr><th>人员</th><th>漏填</th><th>四零</th><th>直播缺场</th><th>邀约奖励</th><th>周破10万</th><th>得分</th></tr>';
+  STAFF.forEach(function(n){
+    var r = res[n];
+    var miss = 0;
+    for(var d=startDay; d<=lastDay; d++){
+      var ds = m+"-"+String(d).padStart(2,"0");
+      if(!r.reports[ds]) miss++;
+    }
+    var liveShort = 0;
+    Object.keys(r.liveWeeks).forEach(function(wk){ var v=r.liveWeeks[wk]; if(v<2) liveShort += (2-v); });
+    var invDays = 0;
+    Object.keys(r.inviteDays).forEach(function(ds){ if(r.inviteDays[ds]>2) invDays++; });
+    var saleWins = 0;
+    Object.keys(r.saleWeeks).forEach(function(wk){ if(r.saleWeeks[wk]>100000) saleWins++; });
+    var score = 500 - miss*10 - r.none*10 - liveShort*10 + invDays*10 + saleWins*50;
+    var color = score>=500 ? "var(--green)" : (score>=450 ? "var(--gold)" : "var(--red)");
+    h += '<tr><td><b>'+n+'</b></td><td>'+miss+'</td><td>'+r.none+'</td><td>'+liveShort+'</td><td>'+invDays+'</td><td>'+saleWins+'</td><td style="font-weight:bold;color:'+color+'">'+score+'</td></tr>';
+  });
+  h += '</table></div>';
+  document.getElementById("perfContent").innerHTML = h;
+}
+
 // ========== INIT ==========
 function init(){
   var d = new Date();
@@ -563,22 +793,28 @@ function init(){
   document.getElementById("custTime").value = d.toISOString().split("T")[0];
   var m = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
   document.getElementById("rptMonth").value = m;
+  document.getElementById("perfMonth").value = m;
   loadConfig();
   loadToday();
   loadBoard();
   loadTarget();
   loadMonthlyProgress();
   loadNewMedia();
+  loadRank();
+  loadPerf();
+  loadFollowRemind();
   loadFromCloud().then(function(res){
-    if(res){ loadToday(); loadBoard(); loadTarget(); loadMonthlyProgress(); loadCustomerList(); loadNewMedia(); }
+    if(res){ loadToday(); loadBoard(); loadTarget(); loadMonthlyProgress(); loadCustomerList(); loadNewMedia(); loadRank(); }
   });
   setInterval(function(){
     loadFromCloud().then(function(res){
-      if(res){ loadToday(); loadBoard(); loadMonthlyProgress(); loadCustomerList(); loadNewMedia(); }
+      if(res){ loadToday(); loadBoard(); loadMonthlyProgress(); loadCustomerList(); loadNewMedia(); loadRank(); }
     });
   }, 60000);
 }
 function loadConfig(){
+  var vb = document.getElementById("verBadge"); if(vb) vb.textContent = SYS_VER;
+  var vt = document.getElementById("verText"); if(vt) vt.textContent = SYS_VER;
   var cfg = getCloudConfig();
   if(cfg){
     document.getElementById("supabaseUrl").value = cfg.url;
@@ -593,15 +829,17 @@ document.addEventListener("DOMContentLoaded", init);
 
 // ========== TAB ==========
 function switchTab(n){
+  if(n==="perf" && !isBoss()){ alert("绩效模块暂时仅老板可见"); return; }
   document.querySelectorAll(".page").forEach(function(p){p.style.display="none"});
   document.getElementById("page-"+n).style.display="block";
   document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
-  document.querySelector(".tab:nth-child("+({daily:1,target:2,report:3,board:4,newmedia:5,customers:6,setup:7}[n])+")").classList.add("active");
+  var tb = document.querySelector('.tab[data-tab="'+n+'"]'); if(tb) tb.classList.add("active");
   if(n==="board") loadBoard();
   if(n==="report") loadReport();
   if(n==="target") loadTarget();
   if(n==="customers") loadCustomerList();
   if(n==="newmedia") loadNewMedia();
+  if(n==="perf") loadPerf();
 }
 function switchStage(s){
   curStage = s;
@@ -867,11 +1105,12 @@ function addCustomer(){
   var intent=intentEl?intentEl.value:"", note=document.getElementById("custNote").value.trim();
   var cateEls=document.querySelectorAll("input[name=custCate]:checked");
   var cates=[]; cateEls.forEach(function(el){cates.push(el.value)});
+  var src=document.getElementById("custSource").value;
   if(!d||!u){alert("请先选择日期和人员");return}
   if(!name){alert("请填写客户姓名");document.getElementById("custName").focus();return}
   if(!intent){alert("请选择客户意向");return}
   var custs=getCustomers();
-  custs.push({id:Date.now()+"-"+Math.random().toString(36).slice(2,7),d:d,u:u,name:name,phone:phone,addr:addr,intent:intent,note:note,s:sales,t:time,cates:cates,v2:"",v2note:"",ts:Date.now()});
+  custs.push({id:Date.now()+"-"+Math.random().toString(36).slice(2,7),d:d,u:u,name:name,phone:phone,addr:addr,intent:intent,note:note,s:sales,t:time,cates:cates,src:src,nextD:"",v2:"",v2note:"",ts:Date.now()});
   saveCustomers(custs);
   document.getElementById("custName").value=""; document.getElementById("custPhone").value="";
   document.getElementById("custAddr").value="";
@@ -890,10 +1129,10 @@ function loadTodayCust(){
   var el=document.getElementById("todayCustList");
   if(custs.length===0){el.innerHTML='<p class="text-muted">今日暂无记录</p>';return}
   var todayIdxs=[]; all.forEach(function(x,i){if(x.d===d) todayIdxs.push(i)});
-  var h='<div style="overflow-x:auto"><table class="cust-table"><tr><th>到店日期</th><th>姓名</th><th>电话</th><th>地址</th><th>接待</th><th>意向</th><th>品类</th><th>备注</th><th>操作</th></tr>';
+  var h='<div style="overflow-x:auto"><table class="cust-table"><tr><th>到店日期</th><th>姓名</th><th>电话</th><th>地址</th><th>接待</th><th>来源</th><th>意向</th><th>品类</th><th>备注</th><th>操作</th></tr>';
   custs.forEach(function(x,i){
     var badge="intent-"+x.intent.toLowerCase(), label={S:"高意向",A:"有意向",B:"进店看看"}[x.intent]||x.intent;
-    h+='<tr><td>'+(x.t||"-")+'</td><td>'+x.name+'</td><td>'+(x.phone||"-")+'</td><td>'+(x.addr||"-")+'</td><td>'+(x.s||x.u)+'</td><td><span class="'+badge+'">'+label+'</span></td><td style="font-size:9px">'+(x.cates?x.cates.join("/"):"-")+'</td><td style="font-size:9px;max-width:80px">'+(x.note||"-")+'</td><td>'+(canDel(x)?'<button class="btn-del" onclick="delCust('+i+','+todayIdxs[i]+')">删</button>':"-")+'</td></tr>';
+    h+='<tr><td>'+(x.t||"-")+'</td><td>'+x.name+'</td><td>'+(x.phone||"-")+'</td><td>'+(x.addr||"-")+'</td><td>'+(x.s||x.u)+'</td><td style="font-size:9px">'+(x.src||"-")+'</td><td><span class="'+badge+'">'+label+'</span></td><td style="font-size:9px">'+(x.cates?x.cates.join("/"):"-")+'</td><td style="font-size:9px;max-width:80px">'+(x.note||"-")+'</td><td>'+(canDel(x)?'<button class="btn-del" onclick="delCust('+i+','+todayIdxs[i]+')">删</button>':"-")+'</td></tr>';
   });
   h+='</table></div>'; el.innerHTML=h;
 }
@@ -911,6 +1150,7 @@ function loadCustomerList(){
   var all=getCustomers();
   if(!isBoss()) all=all.filter(function(x){return (x.s||x.u)===getIdentity()});
   var su=document.getElementById("custFilterUser").value, si=document.getElementById("custFilterIntent").value;
+  var ss=document.getElementById("custFilterSrc").value;
   var sq=document.getElementById("custFilterSearch").value.toLowerCase();
   // Populate user filter
   var sel=document.getElementById("custFilterUser");
@@ -924,12 +1164,13 @@ function loadCustomerList(){
   var f=all.filter(function(x){
     if(su!="全部" && (x.s||x.u)!==su) return false;
     if(si!="全部" && x.intent!==si) return false;
+    if(ss!="全部" && (x.src||"")!==ss) return false;
     if(sq && x.name.toLowerCase().indexOf(sq)<0 && x.phone.indexOf(sq)<0 && x.addr.toLowerCase().indexOf(sq)<0) return false;
     return true;
   });
   if(f.length===0){document.getElementById("customerList").innerHTML='<p class="text-muted">暂无匹配客户</p>';return}
   f.sort(function(a,b){return a.d.localeCompare(b.d)});
-  var h='<div style="overflow-x:auto"><table class="cust-table"><tr><th>日期</th><th>到店</th><th>姓名</th><th>电话</th><th>地址</th><th>接待</th><th>意向</th><th>品类</th><th>二次到店</th><th>跟进</th><th>备注</th><th>操作</th></tr>';
+  var h='<div style="overflow-x:auto"><table class="cust-table"><tr><th>日期</th><th>到店</th><th>姓名</th><th>电话</th><th>地址</th><th>接待</th><th>来源</th><th>意向</th><th>品类</th><th>二次到店</th><th>跟进</th><th>备注</th><th>操作</th></tr>';
   f.forEach(function(x,idx){
     var badge="intent-"+x.intent.toLowerCase(), label={S:"高意向",A:"有意向",B:"进店看看"}[x.intent]||x.intent;
     var v2badge=x.v2?'<span style="color:var(--green);font-weight:bold">'+x.v2+'</span>':'<span class="text-muted">-</span>';
@@ -937,10 +1178,11 @@ function loadCustomerList(){
     var fcnt=(x.follows||[]).length;
     var fbadge='<span class="follow-count" onclick="showFollowHistory(\''+cid+'\')">'+fcnt+'次</span>';
     var btns='<button class="btn-sm btn-success" onclick="secondVisit(\''+cid+'\')">二次</button> <button class="follow-btn" onclick="showFollowModal(\''+cid+'\')">跟进</button> <button class="follow-btn" style="background:#7f8c8d" onclick="showFollowHistory(\''+cid+'\')">记录</button>';
-    h+='<tr><td style="font-size:9px">'+x.d+'</td><td>'+(x.t||"-")+'</td><td>'+x.name+'</td><td>'+(x.phone||"-")+'</td><td style="font-size:9px">'+(x.addr||"-")+'</td><td>'+(x.s||x.u)+'</td><td><span class="'+badge+'">'+label+'</span></td><td style="font-size:9px">'+(x.cates?x.cates.join("/"):"-")+'</td><td>'+v2badge+'</td><td>'+fbadge+'</td><td style="font-size:9px;max-width:80px">'+(x.note||"-")+'</td><td style="white-space:nowrap">'+btns+'</td></tr>';
+    h+='<tr><td style="font-size:9px">'+x.d+'</td><td>'+(x.t||"-")+'</td><td>'+x.name+'</td><td>'+(x.phone||"-")+'</td><td style="font-size:9px">'+(x.addr||"-")+'</td><td>'+(x.s||x.u)+'</td><td style="font-size:9px">'+(x.src||"-")+'</td><td><span class="'+badge+'">'+label+'</span></td><td style="font-size:9px">'+(x.cates?x.cates.join("/"):"-")+'</td><td>'+v2badge+'</td><td>'+fbadge+'</td><td style="font-size:9px;max-width:80px">'+(x.note||"-")+'</td><td style="white-space:nowrap">'+btns+'</td></tr>';
   });
   h+='</table></div>';
   document.getElementById("customerList").innerHTML=h;
+  loadFollowRemind();
 }
 
 function secondVisit(cid){
@@ -981,6 +1223,7 @@ function showFollowModal(cid){
   document.getElementById("followDate").value=new Date().toISOString().split("T")[0];
   document.getElementById("followType").value="二次进店";
   document.getElementById("followNote").value="";
+  document.getElementById("followNext").value=c.nextD||"";
   document.getElementById("followModal").style.display="flex";
 }
 function closeFollowModal(){document.getElementById("followModal").style.display="none"}
@@ -990,9 +1233,11 @@ function saveFollow(){
   var d=document.getElementById("followDate").value;
   var t=document.getElementById("followType").value;
   var n=document.getElementById("followNote").value.trim();
+  var nx=document.getElementById("followNext").value;
   if(!d){alert("请选择跟进日期");return}
   c.follows.push({d:d,t:t,n:n,u:(c.s||c.u),ts:Date.now()});
   if(t==="二次进店"){c.v2=d;c.v2note=n}
+  c.nextD=nx||"";
   c.ts=Date.now();
   saveCustomers(all);
   closeFollowModal();
@@ -1165,32 +1410,66 @@ function loadReport(){
 
 // ========== BOARD ==========
 function loadBoard(){
-  var data = getData(), m = new Date().toISOString().slice(0,7);
-  var md = data.filter(function(x){return x.d.startsWith(m)});
+  var data = getData(), custs = getCustomers(), now = new Date();
+  var mStr = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+  var md = data.filter(function(x){return x.d.startsWith(mStr)});
+  var mc = custs.filter(function(c){ var ds=c.t||c.d||""; return ds.startsWith(mStr); });
   var selEl = document.getElementById("boardUser");
   var selV = selEl ? selEl.value : "全部";
-  if(selV && selV!=="全部") md = md.filter(function(x){return x.u===selV});
-  var tc=0,tv=0,tcu=0,tl=0,ta=0;
+  if(selV && selV!=="全部"){
+    md = md.filter(function(x){return x.u===selV});
+    mc = mc.filter(function(c){return (c.s||c.u)===selV});
+  }
+  var sale=0, tel=0;
   var bu = {};
   md.forEach(function(x){
-    if(!bu[x.u]) bu[x.u]={j:0,y:0,x:0,o:0,c1:0,c2:0,c3:0,c4:0};
-    bu[x.u].j+=x.j;bu[x.u].y+=x.y;bu[x.u].x+=x.x;bu[x.u].o+=x.o;
-    bu[x.u].c1+=(x.c1||0);bu[x.u].c2+=(x.c2||0);bu[x.u].c3+=(x.c3||0);bu[x.u].c4+=(x.c4||0);
-    tc+=x.j;tv+=x.y;tcu+=x.x;tl+=x.o;ta+=x.x;
+    if(!bu[x.u]) bu[x.u]={x:0,c1:0,c2:0,c3:0,c4:0};
+    bu[x.u].x+=(x.x||0); bu[x.u].c1+=(x.c1||0); bu[x.u].c2+=(x.c2||0); bu[x.u].c3+=(x.c3||0); bu[x.u].c4+=(x.c4||0);
+    sale+=(x.x||0); tel+=(x.tel||0);
   });
+  var jk=0, yy=0, yx=0, sNum=0;
+  var cu = {};
+  mc.forEach(function(c){
+    var p=c.s||c.u;
+    if(!cu[p]) cu[p]={jk:0,yy:0,yx:0,s:0};
+    cu[p].jk++; jk++;
+    if(c.src==="邀约"){cu[p].yy++; yy++;}
+    if(c.intent==="S"){cu[p].s++; sNum++; cu[p].yx++; yx++;}
+    else if(c.intent==="A"){cu[p].yx++; yx++;}
+  });
+  var today0 = new Date(); today0.setHours(0,0,0,0);
+  var remindAll = getCustomers().filter(function(c){
+    if(selV && selV!=="全部" && (c.s||c.u)!==selV) return false;
+    var dl = getFollowDeadline(c);
+    return dl && dl.getTime() <= today0.getTime();
+  });
+  var remindBy = {};
+  remindAll.forEach(function(c){ var p=c.s||c.u; remindBy[p]=(remindBy[p]||0)+1; });
   var h = '<div class="stat-grid">';
-  h += '<div class="stat-box"><div class="num">'+tc+'</div><div class="label">接客</div></div>';
-  h += '<div class="stat-box green"><div class="num">'+tv+'</div><div class="label">邀约</div></div>';
-  h += '<div class="stat-box gold"><div class="num">'+(ta/10000).toFixed(1)+'万</div><div class="label">销售</div></div>';
-  h += '<div class="stat-box"><div class="num">'+tl+'</div><div class="label">线上获客</div></div>';
-  h += '<div class="stat-box green"><div class="num">'+md.length+'</div><div class="label">填报次数</div></div>';
-  h += '<div class="stat-box gold"><div class="num">'+Object.keys(bu).length+'</div><div class="label">填报人数</div></div>';
+  h += '<div class="stat-box gold"><div class="num">'+(sale/10000).toFixed(1)+'万</div><div class="label">本月销售</div></div>';
+  h += '<div class="stat-box"><div class="num">'+jk+'</div><div class="label">上门接待</div></div>';
+  h += '<div class="stat-box green"><div class="num">'+yy+'</div><div class="label">邀约客户</div></div>';
+  h += '<div class="stat-box"><div class="num">'+yx+'</div><div class="label">意向客户</div></div>';
+  h += '<div class="stat-box green"><div class="num">'+tel+'</div><div class="label">电话量</div></div>';
+  h += '<div class="stat-box" style="cursor:pointer;border:1px solid var(--red)" title="点击查看待跟进客户" onclick="window.__remindUser=null;switchTab(\'customers\');loadCustomerList();loadFollowRemind()"><div class="num" style="color:var(--red);font-weight:bold">'+remindAll.length+'</div><div class="label">待跟进 ▶</div></div>';
   h += '</div>';
-  
+
+  h += '<div style="font-size:12px;color:var(--blue);margin:12px 0 6px">各人客户跟进（本月）</div>';
+  h += '<div style="overflow-x:auto"><table><tr><th>人员</th><th>上门接待</th><th>邀约</th><th>意向</th><th>S级</th><th>待跟进</th><th>销售(万)</th></tr>';
+  var tj=0,ty2=0,tx3=0,ts3=0,tr2=0,tsl=0;
+  STAFF.forEach(function(u){
+    var v=cu[u]||{jk:0,yy:0,yx:0,s:0};
+    var rn=remindBy[u]||0;
+    var sl=bu[u]?bu[u].x:0;
+    h += '<tr><td>'+u+'</td><td>'+(v.jk||0)+'</td><td>'+(v.yy||0)+'</td><td>'+(v.yx||0)+'</td><td>'+(v.s||0)+'</td><td>'+(rn>0?'<a style="cursor:pointer;color:var(--red);font-weight:bold;text-decoration:underline" title="点击查看'+u+'的待跟进客户" onclick="goFollowPerson(\''+u+'\')">'+rn+'人</a>':rn)+'</td><td>'+(sl/10000).toFixed(1)+'</td></tr>';
+    tj+=v.jk; ty2+=v.yy; tx3+=v.yx; ts3+=v.s; tr2+=rn; tsl+=sl;
+  });
+  h += '<tr style="font-weight:bold;background:var(--blue);color:#fff"><td>合计</td><td>'+tj+'</td><td>'+ty2+'</td><td>'+tx3+'</td><td>'+ts3+'</td><td>'+tr2+'</td><td>'+(tsl/10000).toFixed(1)+'</td></tr></table></div>';
+
   // Mini bar chart
   var labels = Object.keys(bu);
   if(labels.length>0){
-    h += '<div style="font-size:12px;color:var(--blue);margin-bottom:6px">各人销售额</div><div style="display:flex;gap:4px;align-items:flex-end;min-height:60px;padding:6px 0">';
+    h += '<div style="font-size:12px;color:var(--blue);margin:12px 0 6px">各人销售额</div><div style="display:flex;gap:4px;align-items:flex-end;min-height:60px;padding:6px 0">';
     var maxA = Math.max.apply(null,labels.map(function(u){return bu[u].x}))||1;
     labels.forEach(function(u){
       var ht = Math.max(18, bu[u].x/maxA*60);
@@ -1210,10 +1489,10 @@ function loadBoard(){
     h += '<tr style="font-weight:bold;background:var(--blue);color:#fff"><td>合计</td><td>'+(t1/10000).toFixed(1)+'万</td><td>'+(t2/10000).toFixed(1)+'万</td><td>'+(t3/10000).toFixed(1)+'万</td><td>'+(t4/10000).toFixed(1)+'万</td><td>'+(tx/10000).toFixed(1)+'万</td></tr></table></div>';
   }
   document.getElementById("boardContent").innerHTML = h;
-  
-  var tbl = '<table><tr><th>日期</th><th>人员</th><th>接客</th><th>邀约</th><th>销售</th><th>渠道</th><th>获客</th></tr>';
+
+  var tbl = '<table><tr><th>日期</th><th>人员</th><th>销售(元)</th><th>电话</th><th>电话新增</th><th>直播</th><th>入户</th><th>渠道</th><th>小区</th></tr>';
   md.sort(function(a,b){return a.d.localeCompare(b.d)||a.u.localeCompare(b.u)});
-  md.forEach(function(x){tbl+='<tr><td>'+x.d+'</td><td>'+x.u+'</td><td>'+x.j+'</td><td>'+x.y+'</td><td>'+x.x+'</td><td>'+chText(x)+'</td><td>'+x.o+'</td></tr>'});
+  md.forEach(function(x){tbl+='<tr><td style="font-size:9px">'+x.d+'</td><td>'+x.u+'</td><td>'+x.x+'</td><td>'+(x.tel||0)+'</td><td>'+(x.xk||0)+'</td><td>'+(x.live||0)+'</td><td>'+(x.rh||0)+'</td><td>'+(x.qd||0)+'</td><td>'+(x.xq||0)+'</td></tr>'});
   tbl += '</table>';
   document.getElementById("boardTable").innerHTML = tbl;
 }
@@ -1222,15 +1501,22 @@ function loadBoard(){
 function exportData(){
   var d = getData();
   var c = getCustomers();
-  if(d.length===0&&c.length===0){alert("无数据");return}
-  var exp = {daily:d, customers:c};
+  var n = getNewMedia();
+  if(d.length===0&&c.length===0&&n.length===0){alert("无数据");return}
+  var exp = {daily:d, customers:c, newmedia:n, time:new Date().toISOString()};
   var b = new Blob([JSON.stringify(exp,null,2)],{type:"application/json"});
   var a = document.createElement("a");a.href=URL.createObjectURL(b);
-  a.download = "卡萨帝数据_"+new Date().toISOString().split("T")[0]+".json";a.click();
+  a.download = "卡萨帝数据备份_"+new Date().toISOString().split("T")[0]+".json";a.click();
 }
 function clearData(){
   if(!isBoss()){ alert("只有老板可以清除数据"); return; }
-  if(confirm("清除所有数据？")) if(confirm("确认？")){saveData([]);saveCustomers([]);loadToday();loadBoard();loadTarget();loadMonthlyProgress();alert("已清除")}
+  if(confirm("确定清除本机缓存数据？\n\n注意：只清除这台设备浏览器里的缓存，云端共享数据不受影响，重新打开会自动恢复。")){
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(CUST_KEY);
+    localStorage.removeItem(NM_KEY);
+    alert("本机缓存已清除（云端数据不受影响）");
+    loadToday(); loadBoard(); loadMonthlyProgress(); loadCustomerList(); loadNewMedia();
+  }
 }
 </script>
 </body>
