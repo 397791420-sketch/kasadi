@@ -271,19 +271,18 @@ tr:nth-child(even){background:var(--gray)}
 
 <div id="page-perf" class="page" style="display:none">
 <div class="card">
-<h3>月度绩效分 <span class="sprint-badge" style="background:var(--gold);color:#333">满分500</span></h3>
+<h3>月度绩效考核 <span class="sprint-badge" style="background:var(--gold);color:#333">满分100 · 400元/月</span></h3>
 <div class="form-group"><label>月份</label><input type="month" id="perfMonth" onchange="loadPerf()"></div>
 <div id="perfContent">加载中...</div>
 </div>
 <div class="card">
-<h3 style="font-size:13px">绩效规则（按日报和客户登记自动计算）</h3>
+<h3 style="font-size:13px">考核说明（8月12日版打分表）</h3>
 <p style="font-size:11px;color:#777;line-height:1.9">
-· 日报漏填 1 天：-10 分<br>
-· 电话量 / 入户 / 渠道 / 直播 4 项一天内全都没做：-10 分/天<br>
-· 直播每周满 2 场，少 1 场：-10 分<br>
-· 邀约客户 1 天超过 2 个：+10 分/天<br>
-· 当周销售额突破 10 万：+50 分/次<br>
-· 每月以 500 分起算
+· 每人 4 个考核模块，每模块 25 分（张友和为新媒体 40/20/20/20 分），月度总分 100 分<br>
+· 模块得分 = 满分 × 完成率（完成率最高按 100% 计）<br>
+· 否决底线：店内服务完成率&lt;80%否决；直播&lt;4场或视频&lt;6条否决；电话/小区/渠道&lt;6天否决；用户维护&lt;4户否决；触及底线模块记 0 分<br>
+· 考核金额 = 总分 ÷ 100 × 400 元/月<br>
+· 直播/视频/电话/小区/渠道/入户/暖通意向客户自动从日报、新媒体、客户登记统计（8月10日起）；无法自动统计的（教学素材、烘焙、安装交付等）在“手动”列填写，填了会自动保存
 </p>
 </div>
 </div>
@@ -294,7 +293,7 @@ tr:nth-child(even){background:var(--gray)}
 <div id="followRemindList"><p class="text-muted">加载中...</p></div>
 </div>
 <div class="card">
-<h3>客户管理</h3>
+<h3>客户管理 <span id="custIdentity" class="sprint-badge" style="background:var(--blue)"></span></h3>
 <div class="form-row">
 <div class="form-group"><label>销售人员</label><select id="custFilterUser" onchange="window.__remindUser=null;loadCustomerList()"><option value="全部">全部</option></select></div>
 <div class="form-group"><label>意向筛选</label><select id="custFilterIntent" onchange="loadCustomerList()"><option value="全部">全部</option><option value="S">S高意向</option><option value="A">A有意向</option><option value="B">B进店看看</option></select></div>
@@ -491,7 +490,7 @@ var curStage = "base"; // "base" or "sprint"
 var STORAGE_KEY = "kasadi_v3";
 var CLOUD_KEY = "kasadi_cloud_config";
 var CLOUD_PRESET = { url:"https://ifligsvzbuzjiprizkng.supabase.co", key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmbGlnc3Z6YnV6amlwcml6a25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjY2NjEsImV4cCI6MjEwMTIwMjY2MX0.3gw9gT0vVY6yPXsNIVXQcKDjs29HWnKKEInXKb0_8lE" }; // 填入URL和anon key后，所有设备打开即用，无需各自填写
-var SYS_VER = "V9.0（2026-08-09）";
+var SYS_VER = "V10.0（2026-08-12）";
 var PERF_START = "2026-08-10"; // 绩效从8月10日开始统计，此前数据不计分
 
 // ========== DATA LAYER ==========
@@ -568,10 +567,12 @@ async function loadFromCloud(){
     var r2 = await fetch(cfg.url+"/rest/v1/customers?select=data&id=eq.1&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
     var r3 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.2&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
     var r4 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.4&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
+    var r5 = await fetch(cfg.url+"/rest/v1/reports?select=data&id=eq.5&limit=1", {headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key}});
     var j1 = r1.ok ? await r1.json() : [];
     var j2 = r2.ok ? await r2.json() : [];
     var j3 = r3.ok ? await r3.json() : [];
     var j4 = r4.ok ? await r4.json() : [];
+    var j5 = r5.ok ? await r5.json() : [];
     var cloudDaily = (j1.length>0 && j1[0].data) ? JSON.parse(j1[0].data) : [];
     var cloudCusts = (j2.length>0 && j2[0].data) ? JSON.parse(j2[0].data) : [];
     var cloudNewMedia = (j3.length>0 && j3[0].data) ? JSON.parse(j3[0].data) : [];
@@ -589,6 +590,20 @@ async function loadFromCloud(){
       ["老板","叶可可","潘建敏","史学飞","陈小娟","华瑞","张友和"].forEach(function(n){
         if(!getStoredPw(n) && cloudPw[n]) localStorage.setItem(PW_PREFIX+n, cloudPw[n]);
       });
+    }
+    var cloudPerf = (j5.length>0 && j5[0].data) ? JSON.parse(j5[0].data) : {};
+    if(cloudPerf && typeof cloudPerf === "object"){
+      var lm = getPerfManual(), changed = false;
+      Object.keys(cloudPerf).forEach(function(mon){
+        if(!lm[mon]){ lm[mon] = cloudPerf[mon]; changed = true; return; }
+        Object.keys(cloudPerf[mon]||{}).forEach(function(pp){
+          if(!lm[mon][pp]){ lm[mon][pp] = cloudPerf[mon][pp]; changed = true; return; }
+          Object.keys(cloudPerf[mon][pp]||{}).forEach(function(mi){
+            if(lm[mon][pp][mi]===undefined){ lm[mon][pp][mi] = cloudPerf[mon][pp][mi]; changed = true; }
+          });
+        });
+      });
+      if(changed) localStorage.setItem(PERF_MANUAL_KEY, JSON.stringify(lm));
     }
     return {daily:mergedDaily, customers:mergedCusts, newmedia:mergedNewMedia};
   }catch(e){ console.log("Cloud load error:", e.message); return null; }
@@ -687,12 +702,13 @@ function loadFollowRemind(){
   var list = [];
   all.forEach(function(c){
     var dl = getFollowDeadline(c);
-    if(dl && dl.getTime() <= today.getTime()){
-      list.push({c:c, od:Math.floor((today.getTime()-dl.getTime())/86400000)});
+    var never = !(c.follows && c.follows.length>0);
+    if(never || (dl && dl.getTime() <= today.getTime())){
+      list.push({c:c, od: never ? 0 : Math.floor((today.getTime()-dl.getTime())/86400000), never:never});
     }
   });
   var pri = {S:0,A:1,B:2};
-  list.sort(function(a,b){ return pri[a.c.intent]!==pri[b.c.intent] ? pri[a.c.intent]-pri[b.c.intent] : b.od-a.od; });
+  list.sort(function(a,b){ return (b.never-a.never) || (pri[a.c.intent]!==pri[b.c.intent] ? pri[a.c.intent]-pri[b.c.intent] : b.od-a.od); });
   var el = document.getElementById("followRemindList");
   var cnt = document.getElementById("followRemindCount");
   var tb = document.getElementById("tabCustBadge");
@@ -712,7 +728,7 @@ function loadFollowRemind(){
     var last=c.t||c.d||"-";
     (c.follows||[]).forEach(function(f){ if(f.d && f.d>last) last=f.d; });
     var cls = item.od>0 ? 'style="color:var(--red);font-weight:bold"' : 'style="color:#e67e22;font-weight:bold"';
-    h += '<tr><td><b>'+c.name+'</b></td><td>'+(c.phone||"-")+'</td><td><span class="'+badge+'">'+label+'</span></td><td>'+(c.cates?c.cates.join("/"):"-")+'</td><td>'+(c.s||c.u)+'</td><td style="font-size:9px">'+(c.src||"-")+'</td><td>'+last+'</td><td '+cls+'>'+(item.od>0?(item.od+"天"):"今天到期")+'</td><td><button class="follow-btn" onclick="showFollowModal(\''+cid+'\')">跟进</button></td></tr>';
+    h += '<tr><td><b>'+c.name+'</b></td><td>'+(c.phone||"-")+'</td><td><span class="'+badge+'">'+label+'</span></td><td>'+(c.cates?c.cates.join("/"):"-")+'</td><td>'+(c.s||c.u)+'</td><td style="font-size:9px">'+(c.src||"-")+'</td><td>'+last+'</td><td '+cls+'>'+(item.never?"未跟进":(item.od>0?(item.od+"天"):"今天到期"))+'</td><td><button class="follow-btn" onclick="showFollowModal(\''+cid+'\')">跟进</button></td></tr>';
   });
   h += '</table></div>';
   if(isBoss() && window.__remindUser && window.__remindUser!=="全部"){
@@ -721,67 +737,132 @@ function loadFollowRemind(){
   el.innerHTML = h;
 }
 
-// ========== PERF (绩效分) ==========
-function mondayKey(ds){
-  var dt = new Date(ds.replace(/-/g,"/"));
-  var day = dt.getDay() || 7;
-  var mon = new Date(dt); mon.setDate(dt.getDate() - (day-1));
-  return mon.getFullYear()+"-"+String(mon.getMonth()+1).padStart(2,"0")+"-"+String(mon.getDate()).padStart(2,"0");
+﻿// ========== PERF (绩效考核 · 8月12日打分表) ==========
+var PERF_START = "2026-08-10"; // 自动取数开始日期
+var PERF_MANUAL_KEY = "kasadi_perf_manual";
+function getPerfManual(){ try{ return JSON.parse(localStorage.getItem(PERF_MANUAL_KEY))||{}; }catch(e){ return {}; } }
+function savePerfManual(m){ localStorage.setItem(PERF_MANUAL_KEY, JSON.stringify(m)); syncPerfManualToCloud(); }
+async function syncPerfManualToCloud(){
+  var cfg = getCloudConfig(); if(!cfg) return;
+  try{
+    await fetch(cfg.url+"/rest/v1/reports?id=eq.5", {
+      method:"POST",
+      headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"},
+      body: JSON.stringify({id:5, data: JSON.stringify(getPerfManual())})
+    });
+  }catch(e){ console.log("Perf sync error:", e.message); }
+}
+function setPerfManual(inp){
+  var p = inp.getAttribute("data-p"), mi = parseInt(inp.getAttribute("data-mi")||"0",10);
+  var v = inp.value;
+  var m = getPerfManual();
+  var mon = document.getElementById("perfMonth").value;
+  if(!m[mon]) m[mon] = {};
+  if(!m[mon][p]) m[mon][p] = {};
+  if(v===""||v===null) delete m[mon][p][mi]; else m[mon][p][mi] = parseFloat(v)||0;
+  savePerfManual(m);
+  loadPerf();
+}
+// 考核模块配置（2026年8月12日版）
+var PERF_MODULES = {
+  "潘建敏":[
+    {m:"①店内服务（差异化）", sc:25, goal:14, note:"洗衣机案例10件+教学素材4条", veto:{t:"rate",v:0.8}, auto:null},
+    {m:"②抖音直播+视频", sc:25, goal:8, note:"直播每场≥1小时", veto:{t:"or",a:4,b:6}, auto:"live"},
+    {m:"③电话/小区/渠道/设计", sc:25, goal:20, note:"电话30个/小区/渠道/设计跑动每天", veto:{t:"n",v:6}, auto:"telDays"},
+    {m:"④用户维护", sc:25, goal:4, note:"新客入户+老客回访", veto:{t:"n",v:4}, auto:"rh"}
+  ],
+  "叶可可":[
+    {m:"①店内服务（差异化）", sc:25, goal:8, note:"烘焙甜品4次+教学素材4条", veto:{t:"rate",v:0.8}, auto:null},
+    {m:"②抖音直播+视频", sc:25, goal:8, note:"直播每场≥1小时", veto:{t:"or",a:4,b:6}, auto:"live"},
+    {m:"③电话/小区/渠道/设计", sc:25, goal:20, note:"电话30个/小区/渠道/设计跑动每天", veto:{t:"n",v:6}, auto:"telDays"},
+    {m:"④用户维护", sc:25, goal:4, note:"新客入户+老客回访", veto:{t:"n",v:4}, auto:"rh"}
+  ],
+  "史学飞":[
+    {m:"①小区服务（差异化）", sc:25, goal:8, note:"进小区", veto:{t:"rate",v:0.8}, auto:"xqDays"},
+    {m:"②抖音直播+视频", sc:25, goal:8, note:"直播每场≥1小时", veto:{t:"or",a:4,b:6}, auto:"live"},
+    {m:"③电话/小区/渠道/设计", sc:25, goal:20, note:"电话30个/小区/渠道/设计跑动每天", veto:{t:"n",v:6}, auto:"telDays"},
+    {m:"④用户维护", sc:25, goal:4, note:"新客入户+老客回访", veto:{t:"n",v:4}, auto:"rh"}
+  ],
+  "陈小娟":[
+    {m:"①店内服务（差异化）", sc:25, goal:8, note:"独立直播8场", veto:{t:"rate",v:0.8}, auto:"live"},
+    {m:"②抖音直播+视频", sc:25, goal:8, note:"直播每场≥1小时", veto:{t:"or",a:4,b:6}, auto:"live"},
+    {m:"③电话/小区/渠道/设计", sc:25, goal:20, note:"电话30个/小区/渠道/设计跑动每天", veto:{t:"n",v:6}, auto:"telDays"},
+    {m:"④用户维护", sc:25, goal:4, note:"新客入户+老客回访", veto:{t:"n",v:4}, auto:"rh"}
+  ],
+  "华瑞（暖通负责人）":[
+    {m:"①暖通销售（差异化）", sc:25, goal:8, note:"中央空调/新风/地暖意向跟进及成单", veto:{t:"rate",v:0.8}, auto:"nuankong"},
+    {m:"②安装交付与施工质量", sc:25, goal:4, note:"安装监工/验收拍照/施工规范检查", veto:{t:"n",v:3}, auto:null},
+    {m:"③客户维护与老客转介", sc:25, goal:6, note:"新客入户勘测+老客回访清洗保养", veto:{t:"n",v:4}, auto:"rh"},
+    {m:"④产品知识与内容输出", sc:25, goal:4, note:"暖通培训/实拍视频/安装案例素材", veto:{t:"n",v:3}, auto:null}
+  ],
+  "张友和":[
+    {m:"抖音直播", sc:40, goal:24, note:"抖音官方号+抖音个人号", veto:null, auto:"zb"},
+    {m:"抖音视频", sc:20, goal:12, note:"抖音官方号+抖音个人号", veto:null, auto:"sp"},
+    {m:"高德地图、小红书等媒体", sc:20, goal:12, note:"高德地图评论+小红书信息发布等", veto:null, auto:"xhsgd"},
+    {m:"海尔新媒体人员考核", sc:20, goal:110, note:"海尔新媒体人员考核110分", veto:null, auto:null}
+  ]
+};
+function perfCounts(p, month){
+  var data = getData(), nm = getNewMedia(), custs = getCustomers();
+  var r = {live:0, sp:0, zb:0, xhs:0, gd:0, xhsgd:0, telDays:0, xqDays:0, rh:0, nuankong:0};
+  data.forEach(function(x){
+    if(x.u!==p || !x.d.startsWith(month) || x.d<PERF_START) return;
+    r.live += x.live||0;
+    r.rh += x.rh||0;
+    if((x.tel||0)>=30 || (x.qd||0)>0 || (x.xq||0)>0) r.telDays++;
+    if((x.xq||0)>0) r.xqDays++;
+  });
+  nm.forEach(function(x){
+    if(x.u!==p || !x.d.startsWith(month) || x.d<PERF_START) return;
+    r.zb += x.zb||0; r.sp += x.sp||0; r.xhs += x.xhs||0; r.gd += x.gd||0;
+  });
+  custs.forEach(function(c){
+    var ds = c.t||c.d||"";
+    if(!ds.startsWith(month) || (c.s||c.u)!==p) return;
+    var cats = c.cates||[];
+    if(cats.indexOf("中央空调")>=0 || cats.indexOf("新风")>=0 || cats.indexOf("地暖")>=0) r.nuankong++;
+  });
+  r.xhsgd = r.xhs + r.gd;
+  return r;
 }
 function loadPerf(){
   var el = document.getElementById("perfMonth");
   if(!el) return;
   var m = el.value;
   if(!m){ m = new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0"); el.value = m; }
-  var parts = m.split("-"), year=+parts[0], month=+parts[1];
-  var now = new Date();
-  var isCur = (year===now.getFullYear() && month===now.getMonth()+1);
-  var lastDay = isCur ? now.getDate() : new Date(year, month, 0).getDate();
-  var ps = PERF_START.split("-"), psY=+ps[0], psM=+ps[1], psD=+ps[2];
-  if(year<psY || (year===psY && month<psM)){
-    document.getElementById("perfContent").innerHTML = '<div style="padding:24px;text-align:center;color:#999">绩效从 <b>'+PERF_START+'</b> 开始统计，此前的月份不计算</div>';
-    return;
-  }
-  var startDay = (year===psY && month===psM) ? psD : 1;
-  var data = getData(), custs = getCustomers();
-  var md = data.filter(function(x){return x.d>=PERF_START && x.d.startsWith(m) && STAFF.indexOf(x.u)>=0});
-  var res = {};
-  STAFF.forEach(function(n){
-    res[n] = {reports:{}, none:0, liveWeeks:{}, saleWeeks:{}, inviteDays:{}};
+  var manual = getPerfManual();
+  var h = '<div style="overflow-x:auto"><table><tr><th>人员</th><th>总分(满分100)</th><th>考核金额(元)</th><th>状态</th></tr>';
+  var detail = "";
+  Object.keys(PERF_MODULES).forEach(function(p){
+    var mods = PERF_MODULES[p];
+    var c = perfCounts(p, m);
+    var total = 0, vetoAny = false;
+    var dh = '<div style="margin-top:12px"><div style="font-weight:bold;color:var(--blue)">'+p+' <span style="font-size:11px;color:#888">'+m+'</span></div><div style="overflow-x:auto"><table><tr><th>考核模块</th><th>满分</th><th>目标</th><th>完成(自动)</th><th>手动</th><th>完成率</th><th>得分</th><th>底线/说明</th></tr>';
+    mods.forEach(function(mo, mi){
+      var autoVal = mo.auto ? c[mo.auto] : null;
+      var ov = ((manual[m]||{})[p]||{});
+      var doneVal = (ov[mi]!==undefined) ? ov[mi] : (autoVal===null ? 0 : autoVal);
+      var rate = mo.goal>0 ? Math.min(1, doneVal/mo.goal) : 0;
+      var score = Math.round(mo.sc * rate);
+      var vetoTxt = "";
+      if(mo.veto){
+        if(mo.veto.t==="rate" && rate<mo.veto.v){ score=0; vetoTxt="完成率<80%否决"; }
+        else if(mo.veto.t==="n" && doneVal<mo.veto.v){ score=0; vetoTxt="<"+mo.veto.v+"否决"; }
+        else if(mo.veto.t==="or"){ if(c.live<mo.veto.a || c.sp<mo.veto.b){ score=0; vetoTxt="直播<"+mo.veto.a+"场或视频<"+mo.veto.b+"条否决"; } }
+      }
+      if(vetoTxt) vetoAny = true;
+      total += score;
+      var autoShow = (mo.auto==="live") ? c.live+"场 / 视频"+c.sp+"条" : (autoVal===null ? "—" : autoVal);
+      dh += '<tr><td style="font-size:12px">'+mo.m+'</td><td>'+mo.sc+'</td><td>'+mo.goal+'</td><td>'+autoShow+'</td>';
+      dh += '<td><input type="number" style="width:64px;padding:2px" data-p="'+p+'" data-mi="'+mi+'" value="'+(ov[mi]!==undefined?ov[mi]:"")+'" onchange="setPerfManual(this)" placeholder="手动"></td>';
+      dh += '<td>'+(rate*100).toFixed(0)+'%</td><td style="font-weight:bold'+(vetoTxt?';color:var(--red)':'')+'">'+score+'</td><td style="font-size:10px;color:#777">'+(vetoTxt?'<span style="color:var(--red);font-weight:bold">'+vetoTxt+'</span> ':'')+mo.note+'</td></tr>';
+    });
+    dh += '<tr style="font-weight:bold;background:#eaf2fb"><td>合计</td><td>100</td><td colspan="4"></td><td'+(vetoAny?' style="color:var(--red)"':'')+'>'+total+'</td><td>'+(vetoAny?'含否决项':'')+'</td></tr></table></div></div>';
+    var money = Math.round(total/100*400);
+    h += '<tr><td><b>'+p+'</b></td><td style="font-weight:bold">'+total+'</td><td style="font-weight:bold;color:var(--gold)">'+money+'</td><td>'+(vetoAny?'<span style="color:var(--red)">有否决项</span>':'<span style="color:var(--green)">正常</span>')+'</td></tr>';
+    detail += dh;
   });
-  md.forEach(function(x){
-    var r = res[x.u];
-    r.reports[x.d]=1;
-    if(!(x.tel||0) && !(x.rh||0) && !(x.qd||0) && !(x.live||0)) r.none++;
-    var wk = mondayKey(x.d);
-    r.liveWeeks[wk]=(r.liveWeeks[wk]||0)+(x.live||0);
-    r.saleWeeks[wk]=(r.saleWeeks[wk]||0)+(x.x||0);
-  });
-  custs.forEach(function(c){
-    if(c.src!=="邀约") return;
-    var p=c.s||c.u; if(!res[p]) return;
-    var ds=c.t||c.d||""; if(!ds.startsWith(m)) return;
-    res[p].inviteDays[ds]=(res[p].inviteDays[ds]||0)+1;
-  });
-  var h = '<div style="overflow-x:auto"><table><tr><th>人员</th><th>漏填</th><th>四零</th><th>直播缺场</th><th>邀约奖励</th><th>周破10万</th><th>得分</th></tr>';
-  STAFF.forEach(function(n){
-    var r = res[n];
-    var miss = 0;
-    for(var d=startDay; d<=lastDay; d++){
-      var ds = m+"-"+String(d).padStart(2,"0");
-      if(!r.reports[ds]) miss++;
-    }
-    var liveShort = 0;
-    Object.keys(r.liveWeeks).forEach(function(wk){ var v=r.liveWeeks[wk]; if(v<2) liveShort += (2-v); });
-    var invDays = 0;
-    Object.keys(r.inviteDays).forEach(function(ds){ if(r.inviteDays[ds]>2) invDays++; });
-    var saleWins = 0;
-    Object.keys(r.saleWeeks).forEach(function(wk){ if(r.saleWeeks[wk]>100000) saleWins++; });
-    var score = 500 - miss*10 - r.none*10 - liveShort*10 + invDays*10 + saleWins*50;
-    var color = score>=500 ? "var(--green)" : (score>=450 ? "var(--gold)" : "var(--red)");
-    h += '<tr><td><b>'+n+'</b></td><td>'+miss+'</td><td>'+r.none+'</td><td>'+liveShort+'</td><td>'+invDays+'</td><td>'+saleWins+'</td><td style="font-weight:bold;color:'+color+'">'+score+'</td></tr>';
-  });
-  h += '</table></div>';
+  h += '</table></div>' + detail;
   document.getElementById("perfContent").innerHTML = h;
 }
 
@@ -808,7 +889,7 @@ function init(){
   });
   setInterval(function(){
     loadFromCloud().then(function(res){
-      if(res){ loadToday(); loadBoard(); loadMonthlyProgress(); loadCustomerList(); loadNewMedia(); loadRank(); }
+      if(res){ loadToday(); loadBoard(); loadMonthlyProgress(); loadCustomerList(); loadNewMedia(); loadRank(); loadPerf(); }
     });
   }, 60000);
 }
@@ -871,19 +952,35 @@ function submitDaily(){
   var u = document.getElementById("dailyUser").value;
   var dt = document.getElementById("dailyDate").value;
   if(!dt){alert("选日期");return}
+  var c1=parseFloat(document.getElementById("dk8").value)||0;
+  var c2=parseFloat(document.getElementById("dk9").value)||0;
+  var c3=parseFloat(document.getElementById("dk10").value)||0;
+  var c4=parseFloat(document.getElementById("dk11").value)||0;
+  var total=c1+c2+c3+c4;
+  document.getElementById("dk3").value=total;
   var data = getData();
   var idx = data.findIndex(function(x){return x.u===u && x.d===dt});
-  if(idx>-1){if(!confirm("覆盖今日？"))return;data.splice(idx,1)}
+  var old = idx>-1 ? data[idx] : null;
+  if(idx>-1){
+    if(old && (old.x||0)>0 && total===0){
+      if(!confirm("今日已有销售 "+(old.x/10000).toFixed(1)+" 万，本次提交销售额为 0，确定要清掉吗？选择\"取消\"则保留原销售额")){
+        c1=old.c1||0; c2=old.c2||0; c3=old.c3||0; c4=old.c4||0; total=old.x||0;
+      }
+    } else {
+      if(!confirm("覆盖今日？")) return;
+    }
+    data.splice(idx,1);
+  }
   data.push({
     u:u,d:dt,
     j:0,
     y:0,
-    x:parseFloat(document.getElementById("dk3").value)||0,
+    x:total,
     o:0,
-    c1:parseFloat(document.getElementById("dk8").value)||0,
-    c2:parseFloat(document.getElementById("dk9").value)||0,
-    c3:parseFloat(document.getElementById("dk10").value)||0,
-    c4:parseFloat(document.getElementById("dk11").value)||0,
+    c1:c1,
+    c2:c2,
+    c3:c3,
+    c4:c4,
     tel:parseInt(document.getElementById("dkTel").value)||0,
     xk:parseInt(document.getElementById("dkXk").value)||0,
     live:parseInt(document.getElementById("dkLive").value)||0,
@@ -1146,20 +1243,28 @@ function delCust(idx,realIdx){
 }
 
 // ========== CUSTOMER LIST PAGE ==========
+function resetCustFilter(){
+  var sel=document.getElementById("custFilterUser");
+  if(sel) sel.value="全部";
+  window.__remindUser=null;
+  loadCustomerList();
+  loadFollowRemind();
+}
 function loadCustomerList(){
   var all=getCustomers();
+  var ci=document.getElementById("custIdentity");
+  if(ci) ci.textContent = isBoss() ? "老板" : ("员工·"+(getIdentity()||""));
   if(!isBoss()) all=all.filter(function(x){return (x.s||x.u)===getIdentity()});
   var su=document.getElementById("custFilterUser").value, si=document.getElementById("custFilterIntent").value;
   var ss=document.getElementById("custFilterSrc").value;
   var sq=document.getElementById("custFilterSearch").value.toLowerCase();
-  // Populate user filter
+  // Populate user filter (固定人员名单: 老板看全部, 员工只看自己)
   var sel=document.getElementById("custFilterUser");
   var curVal=sel.value;
   sel.innerHTML='<option value="全部">全部</option>';
-  var users=[];
-  all.forEach(function(x){if(users.indexOf(x.s||x.u)<0) users.push(x.s||x.u)});
-  users.sort().forEach(function(u){sel.innerHTML+='<option value="'+u+'">'+u+'</option>'});
-  sel.value=curVal;
+  var users = isBoss() ? STAFF.slice() : [getIdentity()];
+  users.forEach(function(u){ if(u) sel.innerHTML+='<option value="'+u+'">'+u+'</option>'; });
+  sel.value = (curVal==="全部" || users.indexOf(curVal)>=0) ? curVal : "全部";
   // Filter
   var f=all.filter(function(x){
     if(su!="全部" && (x.s||x.u)!==su) return false;
@@ -1168,9 +1273,13 @@ function loadCustomerList(){
     if(sq && x.name.toLowerCase().indexOf(sq)<0 && x.phone.indexOf(sq)<0 && x.addr.toLowerCase().indexOf(sq)<0) return false;
     return true;
   });
-  if(f.length===0){document.getElementById("customerList").innerHTML='<p class="text-muted">暂无匹配客户</p>';return}
+  if(f.length===0){
+    var emptyH = su!=="全部" ? '<div style="background:#fff7e6;border:1px solid var(--gold);padding:8px 10px;border-radius:6px;margin-bottom:8px;font-size:12px">当前筛选：接待销售 = <b>'+su+'</b>，暂无客户 · <a style="color:var(--blue);cursor:pointer;text-decoration:underline" onclick="resetCustFilter()">显示全部</a></div>' : '';
+    document.getElementById("customerList").innerHTML = emptyH + '<p class="text-muted">暂无匹配客户</p>';
+    return;
+  }
   f.sort(function(a,b){return a.d.localeCompare(b.d)});
-  var h='<div style="overflow-x:auto"><table class="cust-table"><tr><th>日期</th><th>到店</th><th>姓名</th><th>电话</th><th>地址</th><th>接待</th><th>来源</th><th>意向</th><th>品类</th><th>二次到店</th><th>跟进</th><th>备注</th><th>操作</th></tr>';
+  var h = (su!=="全部" ? '<div style="background:#fff7e6;border:1px solid var(--gold);padding:8px 10px;border-radius:6px;margin-bottom:8px;font-size:12px">当前筛选：接待销售 = <b>'+su+'</b>（共 '+f.length+' 位客户） · <a style="color:var(--blue);cursor:pointer;text-decoration:underline" onclick="resetCustFilter()">显示全部</a></div>' : '') + '<div style="overflow-x:auto"><table class="cust-table"><tr><th>日期</th><th>到店</th><th>姓名</th><th>电话</th><th>地址</th><th>接待</th><th>来源</th><th>意向</th><th>品类</th><th>二次到店</th><th>跟进</th><th>备注</th><th>操作</th></tr>';
   f.forEach(function(x,idx){
     var badge="intent-"+x.intent.toLowerCase(), label={S:"高意向",A:"有意向",B:"进店看看"}[x.intent]||x.intent;
     var v2badge=x.v2?'<span style="color:var(--green);font-weight:bold">'+x.v2+'</span>':'<span class="text-muted">-</span>';
@@ -1440,11 +1549,15 @@ function loadBoard(){
   var today0 = new Date(); today0.setHours(0,0,0,0);
   var remindAll = getCustomers().filter(function(c){
     if(selV && selV!=="全部" && (c.s||c.u)!==selV) return false;
+    if(!(c.follows && c.follows.length>0)) return true;
     var dl = getFollowDeadline(c);
     return dl && dl.getTime() <= today0.getTime();
   });
   var remindBy = {};
   remindAll.forEach(function(c){ var p=c.s||c.u; remindBy[p]=(remindBy[p]||0)+1; });
+  var tStr = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
+  var tdf = {};
+  getCustomers().forEach(function(c){ var p=c.s||c.u; (c.follows||[]).forEach(function(f){ if(f.d===tStr) tdf[p]=(tdf[p]||0)+1; }); });
   var h = '<div class="stat-grid">';
   h += '<div class="stat-box gold"><div class="num">'+(sale/10000).toFixed(1)+'万</div><div class="label">本月销售</div></div>';
   h += '<div class="stat-box"><div class="num">'+jk+'</div><div class="label">上门接待</div></div>';
@@ -1455,16 +1568,16 @@ function loadBoard(){
   h += '</div>';
 
   h += '<div style="font-size:12px;color:var(--blue);margin:12px 0 6px">各人客户跟进（本月）</div>';
-  h += '<div style="overflow-x:auto"><table><tr><th>人员</th><th>上门接待</th><th>邀约</th><th>意向</th><th>S级</th><th>待跟进</th><th>销售(万)</th></tr>';
-  var tj=0,ty2=0,tx3=0,ts3=0,tr2=0,tsl=0;
+  h += '<div style="overflow-x:auto"><table><tr><th>人员</th><th>上门接待</th><th>邀约</th><th>意向</th><th>S级</th><th>待跟进</th><th>今日跟进</th><th>销售(万)</th></tr>';
+  var tj=0,ty2=0,tx3=0,ts3=0,tr2=0,ttf=0,tsl=0;
   STAFF.forEach(function(u){
     var v=cu[u]||{jk:0,yy:0,yx:0,s:0};
     var rn=remindBy[u]||0;
     var sl=bu[u]?bu[u].x:0;
-    h += '<tr><td>'+u+'</td><td>'+(v.jk||0)+'</td><td>'+(v.yy||0)+'</td><td>'+(v.yx||0)+'</td><td>'+(v.s||0)+'</td><td>'+(rn>0?'<a style="cursor:pointer;color:var(--red);font-weight:bold;text-decoration:underline" title="点击查看'+u+'的待跟进客户" onclick="goFollowPerson(\''+u+'\')">'+rn+'人</a>':rn)+'</td><td>'+(sl/10000).toFixed(1)+'</td></tr>';
-    tj+=v.jk; ty2+=v.yy; tx3+=v.yx; ts3+=v.s; tr2+=rn; tsl+=sl;
+    h += '<tr><td>'+u+'</td><td>'+(v.jk||0)+'</td><td>'+(v.yy||0)+'</td><td>'+(v.yx||0)+'</td><td>'+(v.s||0)+'</td><td>'+(rn>0?'<a style="cursor:pointer;color:var(--red);font-weight:bold;text-decoration:underline" title="点击查看'+u+'的待跟进客户" onclick="goFollowPerson(\''+u+'\')">'+rn+'人</a>':rn)+'</td><td>'+(tdf[u]||0)+'</td><td>'+(sl/10000).toFixed(1)+'</td></tr>';
+    tj+=v.jk; ty2+=v.yy; tx3+=v.yx; ts3+=v.s; tr2+=rn; ttf+=(tdf[u]||0); tsl+=sl;
   });
-  h += '<tr style="font-weight:bold;background:var(--blue);color:#fff"><td>合计</td><td>'+tj+'</td><td>'+ty2+'</td><td>'+tx3+'</td><td>'+ts3+'</td><td>'+tr2+'</td><td>'+(tsl/10000).toFixed(1)+'</td></tr></table></div>';
+  h += '<tr style="font-weight:bold;background:var(--blue);color:#fff"><td>合计</td><td>'+tj+'</td><td>'+ty2+'</td><td>'+tx3+'</td><td>'+ts3+'</td><td>'+tr2+'</td><td>'+ttf+'</td><td>'+(tsl/10000).toFixed(1)+'</td></tr></table></div>';
 
   // Mini bar chart
   var labels = Object.keys(bu);
