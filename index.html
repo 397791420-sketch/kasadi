@@ -195,10 +195,10 @@ tr:nth-child(even){background:var(--gray)}
 </div>
 <div class="form-group"><label>销售额按渠道填写（元）</label>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-<div class="form-group" style="margin:0"><label style="font-size:11px">进店销售</label><input type="number" id="dk8" min="0" value="0" oninput="calcX()"></div>
-<div class="form-group" style="margin:0"><label style="font-size:11px">邀约销售</label><input type="number" id="dk9" min="0" value="0" oninput="calcX()"></div>
-<div class="form-group" style="margin:0"><label style="font-size:11px">渠道销售</label><input type="number" id="dk10" min="0" value="0" oninput="calcX()"></div>
-<div class="form-group" style="margin:0"><label style="font-size:11px">线上销售</label><input type="number" id="dk11" min="0" value="0" oninput="calcX()"></div>
+<div class="form-group" style="margin:0"><label style="font-size:11px">进店销售</label><input type="number" id="dk8" min="0" value="0" oninput="calcX()" onkeyup="calcX()" onchange="calcX()" onpaste="setTimeout(calcX,50)" onblur="calcX()"></div>
+<div class="form-group" style="margin:0"><label style="font-size:11px">邀约销售</label><input type="number" id="dk9" min="0" value="0" oninput="calcX()" onkeyup="calcX()" onchange="calcX()" onpaste="setTimeout(calcX,50)" onblur="calcX()"></div>
+<div class="form-group" style="margin:0"><label style="font-size:11px">渠道销售</label><input type="number" id="dk10" min="0" value="0" oninput="calcX()" onkeyup="calcX()" onchange="calcX()" onpaste="setTimeout(calcX,50)" onblur="calcX()"></div>
+<div class="form-group" style="margin:0"><label style="font-size:11px">线上销售</label><input type="number" id="dk11" min="0" value="0" oninput="calcX()" onkeyup="calcX()" onchange="calcX()" onpaste="setTimeout(calcX,50)" onblur="calcX()"></div>
 </div>
 </div>
 <div class="form-group"><label>总销售额（自动合计）</label><input type="number" id="dk3" min="0" value="0" readonly style="background:#eef3fa;color:var(--gold);font-weight:bold"></div>
@@ -490,7 +490,7 @@ var curStage = "base"; // "base" or "sprint"
 var STORAGE_KEY = "kasadi_v3";
 var CLOUD_KEY = "kasadi_cloud_config";
 var CLOUD_PRESET = { url:"https://ifligsvzbuzjiprizkng.supabase.co", key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmbGlnc3Z6YnV6amlwcml6a25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjY2NjEsImV4cCI6MjEwMTIwMjY2MX0.3gw9gT0vVY6yPXsNIVXQcKDjs29HWnKKEInXKb0_8lE" }; // 填入URL和anon key后，所有设备打开即用，无需各自填写
-var SYS_VER = "V10.0（2026-08-12）";
+var SYS_VER = "V10.1（2026-08-23）";
 var PERF_START = "2026-08-10"; // 绩效从8月10日开始统计，此前数据不计分
 
 // ========== DATA LAYER ==========
