@@ -181,7 +181,7 @@ tr:nth-child(even){background:var(--gray)}
 </select></div>
 <div class="form-group"><label>日期</label><input type="date" id="dailyDate" onchange="loadTodayCust();var dt=this.value;if(dt)document.getElementById('custTime').value=dt"></div>
 </div>
-<div class="form-group"><label>今日工作（可多选）</label><div style="display:flex;flex-wrap:wrap;gap:6px 14px"><label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" id="dkTel" value="电话"> 电话</label><label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" id="dkLive" value="直播"> 直播</label><label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" id="dkRh" value="入户"> 入户</label><label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" id="dkQd" value="渠道"> 渠道</label><label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" id="dkXq" value="小区"> 小区</label></div></div>
+<div class="form-group"><label>今日工作（可多选）</label><div class="cate-group"><label><input type="checkbox" id="dkTel" value="电话"> 电话</label><label><input type="checkbox" id="dkLive" value="直播"> 直播</label><label><input type="checkbox" id="dkRh" value="入户"> 入户</label><label><input type="checkbox" id="dkQd" value="渠道"> 渠道</label><label><input type="checkbox" id="dkXq" value="小区"> 小区</label></div></div>
 <div class="form-group"><label>今日新增客户数量</label><input type="number" id="dkXk" min="0" value="0"></div>
 <div class="form-group"><label>销售额按渠道填写（元）</label>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
@@ -480,7 +480,7 @@ var curStage = "base"; // "base" or "sprint"
 var STORAGE_KEY = "kasadi_v3";
 var CLOUD_KEY = "kasadi_cloud_config";
 var CLOUD_PRESET = { url:"https://ifligsvzbuzjiprizkng.supabase.co", key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmbGlnc3Z6YnV6amlwcml6a25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjY2NjEsImV4cCI6MjEwMTIwMjY2MX0.3gw9gT0vVY6yPXsNIVXQcKDjs29HWnKKEInXKb0_8lE" }; // 填入URL和anon key后，所有设备打开即用，无需各自填写
-var SYS_VER = "V10.3（2026-08-26）";
+var SYS_VER = "V10.4（2026-08-26）";
 var PERF_START = "2026-08-10"; // 绩效从8月10日开始统计，此前数据不计分
 
 // ========== DATA LAYER ==========
