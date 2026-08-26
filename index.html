@@ -181,7 +181,7 @@ tr:nth-child(even){background:var(--gray)}
 </select></div>
 <div class="form-group"><label>日期</label><input type="date" id="dailyDate" onchange="loadTodayCust();var dt=this.value;if(dt)document.getElementById('custTime').value=dt"></div>
 </div>
-<div class="form-group"><label>今日工作（可多选）</label><div class="cate-group"><label><input type="checkbox" id="dkTel" value="电话"> 电话</label><label><input type="checkbox" id="dkLive" value="直播"> 直播</label><label><input type="checkbox" id="dkRh" value="入户"> 入户</label><label><input type="checkbox" id="dkQd" value="渠道"> 渠道</label><label><input type="checkbox" id="dkXq" value="小区"> 小区</label></div></div>
+<div class="form-group"><label>今日工作（可多选）</label><div class="cate-group"><label><input type="checkbox" id="dkTel" value="电话" onchange="document.getElementById('dkTelNum').disabled=!this.checked"> 电话 <input type="number" id="dkTelNum" min="0" value="" placeholder="数量" style="width:56px;padding:2px 4px;margin:0" disabled onclick="event.stopPropagation()"></label><label><input type="checkbox" id="dkLive" value="直播"> 直播</label><label><input type="checkbox" id="dkRh" value="入户"> 入户</label><label><input type="checkbox" id="dkQd" value="渠道"> 渠道</label><label><input type="checkbox" id="dkXq" value="小区"> 小区</label></div></div>
 <div class="form-group"><label>今日新增客户数量</label><input type="number" id="dkXk" min="0" value="0"></div>
 <div class="form-group"><label>销售额按渠道填写（元）</label>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
@@ -480,7 +480,7 @@ var curStage = "base"; // "base" or "sprint"
 var STORAGE_KEY = "kasadi_v3";
 var CLOUD_KEY = "kasadi_cloud_config";
 var CLOUD_PRESET = { url:"https://ifligsvzbuzjiprizkng.supabase.co", key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmbGlnc3Z6YnV6amlwcml6a25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjY2NjEsImV4cCI6MjEwMTIwMjY2MX0.3gw9gT0vVY6yPXsNIVXQcKDjs29HWnKKEInXKb0_8lE" }; // 填入URL和anon key后，所有设备打开即用，无需各自填写
-var SYS_VER = "V10.4（2026-08-26）";
+var SYS_VER = "V10.6（2026-08-26）";
 var PERF_START = "2026-08-10"; // 绩效从8月10日开始统计，此前数据不计分
 
 // ========== DATA LAYER ==========
@@ -971,7 +971,7 @@ function submitDaily(){
     c2:c2,
     c3:c3,
     c4:c4,
-    tel:document.getElementById("dkTel").checked?1:0,
+    tel:document.getElementById("dkTel").checked?(parseInt(document.getElementById("dkTelNum").value)||1):0,
     xk:parseInt(document.getElementById("dkXk").value)||0,
     live:document.getElementById("dkLive").checked?1:0,
     rh:document.getElementById("dkRh").checked?1:0,
@@ -985,7 +985,7 @@ function submitDaily(){
   var msg=document.getElementById("dailySuccess");msg.style.display="block";
   setTimeout(function(){msg.style.display="none"},2500);
   ["dk3","dk8","dk9","dk10","dk11","dkXk"].forEach(function(id){document.getElementById(id).value=0});
-  ["dkTel","dkLive","dkRh","dkQd","dkXq"].forEach(function(id){document.getElementById(id).checked=false});
+  ["dkTel","dkLive","dkRh","dkQd","dkXq"].forEach(function(id){document.getElementById(id).checked=false});  document.getElementById("dkTelNum").value=""; document.getElementById("dkTelNum").disabled=true;
   document.getElementById("dk5").value="";
   calcX();
   loadToday();loadBoard();
@@ -1003,9 +1003,10 @@ function loadToday(){
   md.forEach(function(r){ if(mu[r.u]){mu[r.u].j+=r.j; mu[r.u].y+=r.y; mu[r.u].x+=r.x; mu[r.u].o+=r.o; mu[r.u].tel+=r.tel||0; mu[r.u].xk+=r.xk||0; mu[r.u].live+=r.live||0; mu[r.u].rh+=r.rh||0; mu[r.u].qd+=r.qd||0; mu[r.u].xq+=r.xq||0;} });
   
     var h = '<div style="overflow-x:auto"><table><tr><th>人员</th><th>状态</th><th>销售</th><th>电话</th><th>新增客户</th><th>直播</th><th>入户</th><th>渠道</th><th>小区</th></tr>';
+  var chk=function(v){return v?'<span style="color:var(--green);font-weight:bold">✅</span>':'—'};
   list.forEach(function(u){
     var r = data.find(function(x){return x.u===u && x.d===t});
-    if(r) h += "<tr><td>"+u+'</td><td><span class="status-dot status-on"></span>今日已填</td><td>'+r.x+"</td><td>"+(r.tel||0)+"</td><td>"+(r.xk||0)+"</td><td>"+(r.live||0)+"</td><td>"+(r.rh||0)+"</td><td>"+(r.qd||0)+"</td><td>"+(r.xq||0)+"</td></tr>";
+    if(r) h += "<tr><td>"+u+'</td><td><span class="status-dot status-on"></span>今日已填</td><td>'+r.x+"</td><td>"+chk(r.tel)+"</td><td>"+(r.xk||0)+"</td><td>"+chk(r.live)+"</td><td>"+chk(r.rh)+"</td><td>"+chk(r.qd)+"</td><td>"+chk(r.xq)+"</td></tr>";
     else h += "<tr><td>"+u+'</td><td><span class="status-dot status-off"></span>今日未填</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>';
     h += '<tr style="background:#eaf2fb"><td><b>'+u+'本月合计</b></td><td>—</td><td>'+(mu[u].x/10000).toFixed(1)+'万</td><td>'+(mu[u].tel||0)+'</td><td>'+(mu[u].xk||0)+'</td><td>'+(mu[u].live||0)+'</td><td>'+(mu[u].rh||0)+'</td><td>'+(mu[u].qd||0)+'</td><td>'+(mu[u].xq||0)+'</td></tr>';
   });
