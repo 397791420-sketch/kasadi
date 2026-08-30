@@ -481,7 +481,7 @@ var curStage = "base"; // "base" or "sprint"
 var STORAGE_KEY = "kasadi_v3";
 var CLOUD_KEY = "kasadi_cloud_config";
 var CLOUD_PRESET = { url:"https://ifligsvzbuzjiprizkng.supabase.co", key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmbGlnc3Z6YnV6amlwcml6a25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjY2NjEsImV4cCI6MjEwMTIwMjY2MX0.3gw9gT0vVY6yPXsNIVXQcKDjs29HWnKKEInXKb0_8lE" }; // 填入URL和anon key后，所有设备打开即用，无需各自填写
-var SYS_VER = "V10.7（2026-08-30）";
+var SYS_VER = "V10.8（2026-08-30）";
 var PERF_START = "2026-08-10"; // 绩效从8月10日开始统计，此前数据不计分
 
 // ========== DATA LAYER ==========
@@ -1600,10 +1600,18 @@ function loadBoard(){
   }
   document.getElementById("boardContent").innerHTML = h;
 
-  var tbl = '<table><tr><th>日期</th><th>人员</th><th>销售(元)</th><th>电话</th><th>新增客户</th><th>直播</th><th>入户</th><th>渠道</th><th>小区</th></tr>';
+  var escTxt = function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")};
+  var tbl = '<div style="font-size:12px;color:var(--blue);margin:12px 0 6px">各人每日填报明细（本月，点工作内容看全文）</div>';
+  tbl += '<div style="overflow-x:auto"><table><tr><th>日期</th><th>人员</th><th>销售(元)</th><th>电话</th><th>新增客户</th><th>直播</th><th>入户</th><th>渠道</th><th>小区</th><th>工作内容</th></tr>';
   md.sort(function(a,b){return a.d.localeCompare(b.d)||a.u.localeCompare(b.u)});
-  md.forEach(function(x){tbl+='<tr><td style="font-size:9px">'+x.d+'</td><td>'+x.u+'</td><td>'+x.x+'</td><td>'+(x.tel||0)+'</td><td>'+(x.xk||0)+'</td><td>'+(x.live||0)+'</td><td>'+(x.rh||0)+'</td><td>'+(x.qd||0)+'</td><td>'+(x.xq||0)+'</td></tr>'});
-  tbl += '</table>';
+  md.forEach(function(x){
+    var g = x.g||"";
+    var full = escTxt(g).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+    var gs = g.length>34 ? g.substring(0,34)+"…" : g;
+    var gcell = g ? '<td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;cursor:pointer" title="'+escTxt(g)+'" onclick="alert(\''+full+'\')">'+escTxt(gs)+'</td>' : '<td style="color:#aaa;font-size:11px">—</td>';
+    tbl+='<tr><td style="font-size:9px">'+x.d+'</td><td>'+x.u+'</td><td>'+x.x+'</td><td>'+(x.tel||0)+'</td><td>'+(x.xk||0)+'</td><td>'+(x.live||0)+'</td><td>'+(x.rh||0)+'</td><td>'+(x.qd||0)+'</td><td>'+(x.xq||0)+'</td>'+gcell+'</tr>';
+  });
+  tbl += '</table></div>';
   document.getElementById("boardTable").innerHTML = tbl;
 }
 
