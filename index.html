@@ -192,7 +192,8 @@ tr:nth-child(even){background:var(--gray)}
 </div>
 </div>
 <div class="form-group"><label>总销售额（自动合计）</label><input type="number" id="dk3" min="0" value="0" readonly style="background:#eef3fa;color:var(--gold);font-weight:bold"></div>
-<div class="form-group"><label>今日工作内容</label><textarea id="dk5" placeholder="如：接待张先生看中央空调，带看样板间…"></textarea></div>
+<div class="form-group"><label>上午工作内容（必填，15字以上）</label><textarea id="dk5am" rows="2" placeholder="如：上午接待张先生看中央空调，带看样板间…"></textarea></div>
+<div class="form-group"><label>下午工作内容（必填，15字以上）</label><textarea id="dk5pm" rows="2" placeholder="如：下午电话回访客户、邀约明日到店…"></textarea></div>
 <button class="btn btn-primary" onclick="submitDaily()">提交</button>
 </div>
 <div class="card"><h3>今日状态</h3><div id="todayStatus">加载中...</div></div>
@@ -480,7 +481,7 @@ var curStage = "base"; // "base" or "sprint"
 var STORAGE_KEY = "kasadi_v3";
 var CLOUD_KEY = "kasadi_cloud_config";
 var CLOUD_PRESET = { url:"https://ifligsvzbuzjiprizkng.supabase.co", key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmbGlnc3Z6YnV6amlwcml6a25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjY2NjEsImV4cCI6MjEwMTIwMjY2MX0.3gw9gT0vVY6yPXsNIVXQcKDjs29HWnKKEInXKb0_8lE" }; // 填入URL和anon key后，所有设备打开即用，无需各自填写
-var SYS_VER = "V10.6（2026-08-26）";
+var SYS_VER = "V10.7（2026-08-30）";
 var PERF_START = "2026-08-10"; // 绩效从8月10日开始统计，此前数据不计分
 
 // ========== DATA LAYER ==========
@@ -942,6 +943,9 @@ function submitDaily(){
   var u = document.getElementById("dailyUser").value;
   var dt = document.getElementById("dailyDate").value;
   if(!dt){alert("选日期");return}
+  var gam=document.getElementById("dk5am").value.trim(), gpm=document.getElementById("dk5pm").value.trim();
+  if(gam.length<15){alert("请填写上午工作内容（至少15字）");document.getElementById("dk5am").focus();return}
+  if(gpm.length<15){alert("请填写下午工作内容（至少15字）");document.getElementById("dk5pm").focus();return}
   var c1=parseFloat(document.getElementById("dk8").value)||0;
   var c2=parseFloat(document.getElementById("dk9").value)||0;
   var c3=parseFloat(document.getElementById("dk10").value)||0;
@@ -978,7 +982,7 @@ function submitDaily(){
     qd:document.getElementById("dkQd").checked?1:0,
     xq:document.getElementById("dkXq").checked?1:0,
     wk:["dkTel","dkLive","dkRh","dkQd","dkXq"].filter(function(id){return document.getElementById(id).checked}).map(function(id){return {dkTel:"电话",dkLive:"直播",dkRh:"入户",dkQd:"渠道",dkXq:"小区"}[id]}).join("/"),
-    g:document.getElementById("dk5").value||"",
+    g:"上午："+gam+"；下午："+gpm,
     ts:Date.now()
   });
   saveData(data);
@@ -986,7 +990,7 @@ function submitDaily(){
   setTimeout(function(){msg.style.display="none"},2500);
   ["dk3","dk8","dk9","dk10","dk11","dkXk"].forEach(function(id){document.getElementById(id).value=0});
   ["dkTel","dkLive","dkRh","dkQd","dkXq"].forEach(function(id){document.getElementById(id).checked=false});  document.getElementById("dkTelNum").value=""; document.getElementById("dkTelNum").disabled=true;
-  document.getElementById("dk5").value="";
+  document.getElementById("dk5am").value=""; document.getElementById("dk5pm").value="";
   calcX();
   loadToday();loadBoard();
 }
